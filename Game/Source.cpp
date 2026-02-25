@@ -3,6 +3,9 @@
 #ifdef _DEBUG
 #include<iostream>
 #endif
+#include<d3d12.h>
+#include<dxgi1_6.h>
+#include<vector>
 
 LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (msg == WM_DESTROY) {
@@ -56,6 +59,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	);
 	
 	ShowWindow(hwnd, SW_SHOW); // ウィンドウを表示する
+
+	ID3D12Device* _dev = nullptr;
+	IDXGIFactory6* _dxgiFactory = nullptr;
+	IDXGISwapChain4* _swapChain = nullptr;
+
+	HRESULT result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory)); // DXGIファクトリーを作成
+	IDXGIAdapter* tmpAdapter = nullptr;
+	std::vector<IDXGIAdapter*> adapters; // 利用可能なアダプターを保存するベクター
+	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+		adapters.push_back(tmpAdapter); // アダプターをベクターに追加
+	}
+	for (auto adapter : adapters) {
+		DXGI_ADAPTER_DESC desc;
+		adapter->GetDesc(&desc);
+		std::wstring wdesc(desc.Description);
+
+		if (wdesc.find(L"NVIDIA") != std::wstring::npos) {
+			tmpAdapter = adapter;
+			break; // NVIDIA製のアダプターが見つかったらループを抜ける
+		}
+
+	}
+
+	D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+	};
+
+	D3D_FEATURE_LEVEL supportedFeatureLevel; // 最低限必要な機能レベルを指定
+	for (auto level : featureLevels) {
+		if (D3D12CreateDevice(
+			tmpAdapter, // 物理デバイスを指定。nullptrだとOSが最適なものを選ぶ
+			level, // DirectXの機能レベルを指定
+			IID_PPV_ARGS(&_dev) // デバイスのポインタを受け取る変数のアドレスを指定
+			) == S_OK) 
+		{
+			supportedFeatureLevel = level;
+			break; // 対応した機能レベルが見つかったらループを抜ける
+		}
+	}
+	if (_dev == nullptr) {
+		DebugOutputFormatString("DirectX 12に対応したデバイスが見つかりませんでした。\n");
+		return -1;
+	}
 
 	MSG msg = {};
 
