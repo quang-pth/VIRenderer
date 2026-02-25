@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "configs",
+            "includePath": [
+                "${workspaceFolder}/Vendor/DirectX-Headers/include"
+            ],
+            "defines": ["_DEBUG", "VI_API"],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}
