@@ -84,6 +84,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12GraphicsCommandList* _cmdList = nullptr;
 	ID3D12CommandQueue* _cmdQueue = nullptr;
 	ID3D12DescriptorHeap* _rtvHeap = nullptr;
+	ID3D12Fence* _fence = nullptr;
+	UINT64 _fenceVal = 0;
 
 	EnableDebugLayer();
 
@@ -218,6 +220,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		_dev->CreateRenderTargetView(backBuffers[i], nullptr, heapHandle); // レンダーターゲットビューを作成。今回はシンプルにするために、ビューの設定はnullptrを指定
 	}
 
+	if (_dev->CreateFence(
+		_fenceVal, // フェンスの初期値を指定, 今回は0から始めるので_fenceValを指定
+		D3D12_FENCE_FLAG_NONE, // フェンスのフラグを指定, 今回は特に必要ないのでD3D12_FENCE_FLAG_NONEを指定
+		IID_PPV_ARGS(&_fence) // フェンスのポインタを受け取る変数のアドレスを指定
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create fence");
+		return -1;
+	}
+
 	MSG msg = {};
 
 	while (true) {
@@ -233,7 +244,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			break;
 		}
 
-		_cmdAllocator->Reset();
 		UINT backBufferIdx = _swapChain->GetCurrentBackBufferIndex();
 		D3D12_CPU_DESCRIPTOR_HANDLE descHandle = _rtvHeap->GetCPUDescriptorHandleForHeapStart();
 		descHandle.ptr += backBufferIdx * descHeapSize;
@@ -243,13 +253,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true, // レンダーターゲットのハンドルは配列で渡す必要があるが、今回は1つだけなのでtrueを指定して、配列ではなく単一のハンドルを渡す
 			nullptr // デプスステンシルビューのハンドルを指定。今回はデプスステンシルバッファを使わないのでnullptrを指定
 		);
+		
+		D3D12_RESOURCE_BARRIER resourceBarrier = {};
+		resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		resourceBarrier.Transition.pResource = backBuffers[backBufferIdx];
+		resourceBarrier.Transition.Subresource = 0;
+		resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		
 		float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f};
+		_cmdList->ResourceBarrier(1, &resourceBarrier);
 		_cmdList->ClearRenderTargetView(descHandle, clearColor, 0, nullptr);
+
+		resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		_cmdList->ResourceBarrier(1, &resourceBarrier);
+	
 		_cmdList->Close(); // コマンドリストをクローズして、コマンドの記録を終了する
 		ID3D12CommandList* cmdLists[] = { _cmdList };
 		_cmdQueue->ExecuteCommandLists(1, cmdLists);
+		_cmdQueue->Signal(_fence, ++_fenceVal);
+		if (_fence->GetCompletedValue() != _fenceVal) {
+			HANDLE completeEvent = CreateEvent(
+				nullptr, // セキュリティ属性。nullptrならデフォルトのセキュリティ設定
+				false, // マニュアルリセットイベントかオートリセットイベントか。
+				false, // イベントの初期状態。trueならシグナル状態、falseなら非シグナル状態
+				nullptr // イベントの名前。nullptrなら名前なしイベント
+			);
+			_fence->SetEventOnCompletion(_fenceVal, completeEvent);
+			WaitForSingleObject(completeEvent, INFINITE); // イベントがシグナル状態になるまで待つ。これにより、GPUがコマンドの実行を完了するまで次のコマンドを送らないようにする
+			CloseHandle(completeEvent); // イベントハンドルを閉じる
+		}
 		_cmdAllocator->Reset(); // コマンドアロケーターをリセットして、コマンドリストが使用したコマンドアロケーターのメモリを再利用できるようにする
 		_cmdList->Reset(_cmdAllocator, nullptr); // コマンドリストをリセットして、再びコマンドを記録できるようにする
+
 		_swapChain->Present(
 			1, // 垂直同期ありで表示。0なら垂直同期なし
 			0
