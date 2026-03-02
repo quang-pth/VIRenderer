@@ -23,8 +23,21 @@ void DebugOutputFormatString(const char* format, ...) {
 #if _DEBUG
     va_list valist;
     va_start(valist, format);
-    printf(format, valist);
+	vprintf(format, valist);
     va_end(valist);
+#endif
+}
+
+void EnableDebugLayer() {
+#if _DEBUG
+	ID3D12Debug* debugLayer = nullptr;
+	if (D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer)) != S_OK) {
+		DebugOutputFormatString("Failed to get DirectX Debug Interface");
+		return;
+	}
+
+	debugLayer->EnableDebugLayer();
+	debugLayer->Release();
 #endif
 }
 
@@ -41,7 +54,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	RegisterClassEx(&w); // ウィンドウクラスをOSに登録
 
-	RECT wrc = { 0, 0, 1280, 720 }; // ウィンドウのクライアント領域のサイズを指定
+	const uint16_t windowWidth = 1280;
+	const uint16_t windowHeight = 720;
+	const uint16_t backBuffersCount = 2;
+
+	RECT wrc = { 0, 0, windowWidth, windowHeight }; // ウィンドウのクライアント領域のサイズを指定
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE); // ウィンドウサイズをクライアント領域のサイズから計算
 	// ウィンドウを作成
 	HWND hwnd = CreateWindow(
@@ -63,8 +80,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Device* _dev = nullptr;
 	IDXGIFactory6* _dxgiFactory = nullptr;
 	IDXGISwapChain4* _swapChain = nullptr;
+	ID3D12CommandAllocator* _cmdAllocator = nullptr;
+	ID3D12GraphicsCommandList* _cmdList = nullptr;
+	ID3D12CommandQueue* _cmdQueue = nullptr;
+	ID3D12DescriptorHeap* _rtvHeap = nullptr;
 
-	HRESULT result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory)); // DXGIファクトリーを作成
+	EnableDebugLayer();
+
+#if _DEBUG
+	CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory)); // デバッグモードでDXGIファクトリーを作成
+#else
+	CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory)); // DXGIファクトリーを作成
+#endif
+
 	IDXGIAdapter* tmpAdapter = nullptr;
 	std::vector<IDXGIAdapter*> adapters; // 利用可能なアダプターを保存するベクター
 	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
@@ -102,8 +130,92 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 	if (_dev == nullptr) {
-		DebugOutputFormatString("DirectX 12に対応したデバイスが見つかりませんでした。\n");
+		DebugOutputFormatString("Failed to create DirectX Device\n");
 		return -1;
+	}
+
+	if (_dev->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストのタイプを指定
+		IID_PPV_ARGS(&_cmdAllocator) // コマンドアロケーターのポインタを受け取る変数のアドレスを指定
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create command allocator \n");
+		return -1;
+	}
+
+	if (_dev->CreateCommandList(
+		0, // ノードマスク。シングルGPUの場合は0で問題ない
+		D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストのタイプを指定
+		_cmdAllocator, // コマンドアロケーターを指定
+		nullptr, // 初期パイプラインステートオブジェクト。今はまだ必要ないのでnullptrを指定
+		IID_PPV_ARGS(&_cmdList) // コマンドリストのポインタを受け取る変数のアドレスを指定
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create command list\n");
+		return -1;
+	}
+
+	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
+	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	cmdQueueDesc.NodeMask = 0; // シングルGPUの場合は0で問題ない
+	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	if (_dev->CreateCommandQueue(
+		&cmdQueueDesc,
+		IID_PPV_ARGS(&_cmdQueue)
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create command queue\n");
+		return -1;
+	}
+
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+	swapChainDesc.Width = windowWidth;
+	swapChainDesc.Height = windowHeight;
+	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.Stereo = false; // ステレオ3D表示をするかどうか
+	swapChainDesc.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。1ならマルチサンプリングなし
+	swapChainDesc.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。0が最も高品質
+	swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER; // バックバッファの用途を指定。
+	swapChainDesc.BufferCount = backBuffersCount;
+	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	if (_dxgiFactory->CreateSwapChainForHwnd(
+		_cmdQueue, 
+		hwnd,
+		&swapChainDesc,
+		nullptr, // フルスクリーンモードの設定。今はまだ必要ないのでnullptrを指定
+		nullptr, // 出力を制限する場合はその出力を指定。今はまだ必要ないのでnullptrを指定
+		(IDXGISwapChain1**)&_swapChain
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create swapchain\n");
+		return -1;
+	}
+
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
+	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	descriptorHeapDesc.NodeMask = 0; // シングルGPUの場合は0で問題ない
+	descriptorHeapDesc.NumDescriptors = backBuffersCount; // デスクリプタの数を指定。今回はバックバッファの数と同じにする
+	descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	if (_dev->CreateDescriptorHeap(
+		&descriptorHeapDesc,
+		IID_PPV_ARGS(&_rtvHeap)
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create descriptor heap\n");
+		return -1;
+	}
+
+	DXGI_SWAP_CHAIN_DESC desc = {};
+	_swapChain->GetDesc(&desc);
+	std::vector<ID3D12Resource*> backBuffers(desc.BufferCount);
+	D3D12_CPU_DESCRIPTOR_HANDLE heapHandle = _rtvHeap->GetCPUDescriptorHandleForHeapStart(); // デスクリプタヒープの先頭のハンドルを取得
+	UINT descHeapSize = _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV); // デスクリプタヒープのタイプに応じたハンドルのサイズを取得
+	// バックバッファの数だけループして、バックバッファを取得して、レンダーターゲットビューを作成する
+	for (uint8_t i = 0; i < desc.BufferCount; ++i) {
+		_swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i])); // バックバッファを取得
+		heapHandle.ptr += i * descHeapSize; // デスクリプタヒープのハンドルをバックバッファの数だけ進める
+		_dev->CreateRenderTargetView(backBuffers[i], nullptr, heapHandle); // レンダーターゲットビューを作成。今回はシンプルにするために、ビューの設定はnullptrを指定
 	}
 
 	MSG msg = {};
@@ -120,11 +232,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (msg.message == WM_QUIT) { // WM_QUITメッセージならループを抜ける
 			break;
 		}
+
+		_cmdAllocator->Reset();
+		UINT backBufferIdx = _swapChain->GetCurrentBackBufferIndex();
+		D3D12_CPU_DESCRIPTOR_HANDLE descHandle = _rtvHeap->GetCPUDescriptorHandleForHeapStart();
+		descHandle.ptr += backBufferIdx * descHeapSize;
+		_cmdList->OMSetRenderTargets(
+			1, // レンダーターゲットの数を指定。今回は1つだけなので1を指定 
+			&descHandle, // レンダーターゲットのハンドルを指定
+			true, // レンダーターゲットのハンドルは配列で渡す必要があるが、今回は1つだけなのでtrueを指定して、配列ではなく単一のハンドルを渡す
+			nullptr // デプスステンシルビューのハンドルを指定。今回はデプスステンシルバッファを使わないのでnullptrを指定
+		);
+		float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f};
+		_cmdList->ClearRenderTargetView(descHandle, clearColor, 0, nullptr);
+		_cmdList->Close(); // コマンドリストをクローズして、コマンドの記録を終了する
+		ID3D12CommandList* cmdLists[] = { _cmdList };
+		_cmdQueue->ExecuteCommandLists(1, cmdLists);
+		_cmdAllocator->Reset(); // コマンドアロケーターをリセットして、コマンドリストが使用したコマンドアロケーターのメモリを再利用できるようにする
+		_cmdList->Reset(_cmdAllocator, nullptr); // コマンドリストをリセットして、再びコマンドを記録できるようにする
+		_swapChain->Present(
+			1, // 垂直同期ありで表示。0なら垂直同期なし
+			0
+		);
 	}
 
 	UnregisterClass(w.lpszClassName, w.hInstance); // ウィンドウクラスの登録を解除
 
-	DebugOutputFormatString("ウィンドウを閉じました。\n");
+	DebugOutputFormatString("Window Closed\n");
 	getchar();
 
 	return 0;
