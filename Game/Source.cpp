@@ -5,6 +5,7 @@
 #endif
 #include<d3d12.h>
 #include<dxgi1_6.h>
+#include<DirectXMath.h>
 #include<vector>
 
 LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -51,7 +52,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	w.lpfnWndProc = (WNDPROC)WindowProcedure; // ウィンドウプロシージャを指定
 	w.lpszClassName = _T("VIRenderer"); // ウィンドウクラスの名前を指定
 	w.hInstance = GetModuleHandleA(NULL); // インスタンスハンドルを指定
-
+	
 	RegisterClassEx(&w); // ウィンドウクラスをOSに登録
 
 	const uint16_t windowWidth = 1280;
@@ -86,6 +87,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12DescriptorHeap* _rtvHeap = nullptr;
 	ID3D12Fence* _fence = nullptr;
 	UINT64 _fenceVal = 0;
+	ID3D12Resource* _vertexBuffer = nullptr;
 
 	EnableDebugLayer();
 
@@ -230,6 +232,62 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	MSG msg = {};
+
+	DirectX::XMFLOAT3 vertices[3] = {
+		{-1.0f,  -1.0f,  0.0f},	// 左下
+		{-1.0f,   1.0f,  0.0f},	// 左上
+		{ 1.0f,  -1.0f,  0.0f}	// 右下
+	};
+
+	D3D12_HEAP_PROPERTIES heapProperties;
+	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // ヒープのタイプを指定。CPUからGPUにデータを転送するためのヒープなのでD3D12_HEAP_TYPE_UPLOADを指定
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // CPUのページプロパティ。D3D12_HEAP_TYPE_DEFAULTを使用する場合はD3D12_CPU_PAGE_PROPERTY_UNKNOWNを指定する必要がある
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN; // メモリプールの優先順位。D3D12_HEAP_TYPE_DEFAULTを使用する場合はD3D12_MEMORY_POOL_UNKNOWNを指定する必要がある
+	heapProperties.CreationNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
+	heapProperties.VisibleNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
+
+	D3D12_RESOURCE_DESC resourceDesc;
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // リソースの次元を指定。今回は頂点バッファなのでD3D12_RESOURCE_DIMENSION_BUFFERを指定
+	resourceDesc.Width = sizeof(vertices); // リソースの幅を指定。今回は頂点データ全体のサイズを指定
+	resourceDesc.Height = 1; // リソースの高さを指定。バッファリソースの場合は1を指定
+	resourceDesc.Alignment = 0; // リソースのアライメントを指定。0ならデフォルトのアライメントが使用される
+	resourceDesc.DepthOrArraySize = 1; // リソースの深さまたは配列サイズを指定。バッファリソースの場合は1を指定
+	resourceDesc.MipLevels = 1; // ミップレベルの数を指定。バッファリソースの場合は1を指定
+	resourceDesc.Format = DXGI_FORMAT_UNKNOWN; // リソースのフォーマットを指定。バッファリソースの場合はDXGI_FORMAT_UNKNOWNを指定
+	resourceDesc.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
+	resourceDesc.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // リソースのフラグを指定。今回は特に必要ないのでD3D12_RESOURCE_FLAG_NONEを指定
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // リソースのレイアウトを指定。バッファリソースの場合はD3D12_TEXTURE_LAYOUT_ROW_MAJORを指定
+
+	if (_dev->CreateCommittedResource(
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&_vertexBuffer)
+	) != S_OK) 
+	{
+		DebugOutputFormatString("Failed to create vertex buffer");
+		return -1;
+	}
+
+	DirectX::XMFLOAT3* vertexBufferAddress = nullptr;
+	_vertexBuffer->Map(
+		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定
+		nullptr, // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をマップする
+		(void**)&vertexBufferAddress // マップされたアドレスを受け取る変数のアドレスを指定
+	);
+	std::copy(std::begin(vertices), std::end(vertices), vertexBufferAddress);
+	_vertexBuffer->Unmap(
+		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定 
+		nullptr // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をアンマップする
+	);
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = sizeof(vertices);
+	vertexBufferView.StrideInBytes = sizeof(vertices[0]);
 
 	while (true) {
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) { // メッセージがあるか確認
