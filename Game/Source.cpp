@@ -5,6 +5,7 @@
 #endif
 #include<d3d12.h>
 #include<dxgi1_6.h>
+#include<d3dcompiler.h>
 #include<DirectXMath.h>
 #include<vector>
 
@@ -289,6 +290,147 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexBufferView.SizeInBytes = sizeof(vertices);
 	vertexBufferView.StrideInBytes = sizeof(vertices[0]);
 
+	ID3DBlob* _vsBlob = nullptr;
+	ID3DBlob* _psBlob = nullptr;
+	ID3DBlob* _errorBlob = nullptr;
+	HRESULT result = D3DCompileFromFile(
+		L"Assets/Shader/BasicVertexShader.vs.hlsl",
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"BasicVS",
+		"vs_5_0",
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+		0,
+		&_vsBlob,
+		&_errorBlob);
+	if (FAILED(result)) {
+		if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+			::OutputDebugStringA("Assets/Shader/BasicVertexShader.vs.hlsl is not found");
+		}
+		else {
+			std::string errorMsg;
+			errorMsg.resize(_errorBlob->GetBufferSize());
+			std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
+			errorMsg += "\n";
+			::OutputDebugStringA(errorMsg.c_str());
+		}
+		return -1;
+	}
+
+	result = D3DCompileFromFile(
+		L"Assets/Shader/BasicPixelShader.ps.hlsl",
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"BasicPS",
+		"ps_5_0",
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+		0,
+		&_psBlob,
+		&_errorBlob);
+	if (FAILED(result)) {
+		if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+			::OutputDebugStringA("Assets/Shader/BasicPixelShader.ps.hlsl is not found");
+		}
+		else {
+			std::string errorMsg;
+			errorMsg.resize(_errorBlob->GetBufferSize());
+			std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
+			errorMsg += "\n";
+			::OutputDebugStringA(errorMsg.c_str());
+		}
+		return -1;
+	}
+
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+	};
+
+	ID3D12PipelineState* _pipelineState = nullptr;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
+	pipelineDesc.VS.pShaderBytecode = _vsBlob->GetBufferPointer();
+	pipelineDesc.VS.BytecodeLength = _vsBlob->GetBufferSize();
+	pipelineDesc.PS.pShaderBytecode = _psBlob->GetBufferPointer();
+	pipelineDesc.PS.BytecodeLength = _psBlob->GetBufferSize();
+	pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // サンプルマスクを指定。0xffffffffならすべてのサンプルが有効
+	pipelineDesc.RasterizerState.MultisampleEnable = false; // マルチサンプリングを有効にするかどうか。今回はマルチサンプリングを使用しないのでfalseを指定
+	pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // カリングモードを指定。今回は三角形の表も裏も両方表示したいのでD3D12_CULL_MODE_NONEを指定
+	pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // 塗りつぶしモードを指定。D3D12_FILL_MODE_WIREFRAMEならワイヤーフレーム表示になるが、今回は通常の塗りつぶし表示にしたいのでD3D12_FILL_MODE_SOLIDを指定
+	pipelineDesc.RasterizerState.DepthClipEnable = true; // 深度クリッピングを有効にするかどうか。これをtrueにしておくと、深度が0以下のピクセルがクリップされる。今回は有効にしておく
+	pipelineDesc.BlendState.AlphaToCoverageEnable = false; // アルファトゥカバレッジを有効にするかどうか。マルチサンプリングのみで意味がある機能なので、今回はマルチサンプリングを使用しないためfalseを指定
+	pipelineDesc.BlendState.IndependentBlendEnable = false; // 独立ブレンドを有効にするかどうか。複数のレンダーターゲットを使用する場合に、レンダーターゲットごとに異なるブレンド設定を使用できるようになるが、今回はレンダーターゲットは1つだけなのでfalseを指定
+
+	D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc = {};
+	defaultRenderTargetBlendDesc.BlendEnable = false; // ブレンドを有効にするかどうか。今回はブレンドを使用しないのでfalseを指定
+	defaultRenderTargetBlendDesc.LogicOpEnable = false; // ロジックオペレーションを有効にするかどうか。今回はロジックオペレーションを使用しないのでfalseを指定
+	defaultRenderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL; // レンダーターゲットの書き込みマスクを指定。今回はすべてのチャンネルを書き込み可能にするのでD3D12_COLOR_WRITE_ENABLE_ALLを指定
+	
+	pipelineDesc.BlendState.RenderTarget[0] = defaultRenderTargetBlendDesc;
+
+	pipelineDesc.InputLayout.pInputElementDescs = inputLayout; // 入力レイアウトの配列を指定
+	pipelineDesc.InputLayout.NumElements = _countof(inputLayout); // 入力レイアウトの要素数を指定。_countofは配列の要素数を取得するマクロ
+	pipelineDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED; // ストリップカット値を指定。インデックスバッファを使用しない場合はD3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLEDを指定
+	pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // プリミティブトポロジー型を指定。今回は三角形を描画するのでD3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLEを指定
+	pipelineDesc.NumRenderTargets = 1; // レンダーターゲットの数を指定。今回は1つだけなので1を指定
+	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM; // レンダーターゲットのフォーマットを指定。今回はRGBA8の不透明度付きフォーマットを指定
+	pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
+	pipelineDesc.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
+
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; //今回は頂点情報だけをルートパラメータとして使用するので、D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUTを指定して、入力アセンブラの入力レイアウトを使用できるようにする
+
+	ID3DBlob* rootSignatureBlob = nullptr;
+	result = D3D12SerializeRootSignature(
+		&rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1, // ルートシグネチャのバージョンを指定。今回は1.0を指定
+		&rootSignatureBlob,
+		&_errorBlob
+	);
+	if (FAILED(result)) {
+		std::string errorMsg;
+		errorMsg.resize(_errorBlob->GetBufferSize());
+		std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
+		errorMsg += "\n";
+		::OutputDebugStringA(errorMsg.c_str());
+		return -1;
+	}
+
+	ID3D12RootSignature* _rootSignature = nullptr;
+	if (_dev->CreateRootSignature(
+		0, // ノードマスク。シングルGPUの場合は0で問題ない
+		rootSignatureBlob->GetBufferPointer(), // ルートシグネチャのバイナリデータを指定
+		rootSignatureBlob->GetBufferSize(), // ルートシグネチャのバイナリデータのサイズを指定
+		IID_PPV_ARGS(&_rootSignature) // ルートシグネチャのポインタを受け取る変数のアドレスを指定
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create root signature");
+		rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
+		return -1;
+	}
+	rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
+	
+	pipelineDesc.pRootSignature = _rootSignature; // パイプラインステートのルートシグネチャを指定
+
+	if (_dev->CreateGraphicsPipelineState(
+		&pipelineDesc,
+		IID_PPV_ARGS(&_pipelineState)
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create graphics pipeline state");
+		return -1;
+	}
+
+	D3D12_VIEWPORT _viewport = {};
+	_viewport.Width = windowWidth;
+	_viewport.Height = windowHeight;
+	_viewport.TopLeftX = 0.0f;
+	_viewport.TopLeftY = 0.0f;
+	_viewport.MinDepth = 0.0f;
+	_viewport.MaxDepth = 1.0f;
+
+	D3D12_RECT _scissorRect = {};
+	_scissorRect.top = 0;
+	_scissorRect.left = 0;
+	_scissorRect.right = _scissorRect.left + windowWidth;
+	_scissorRect.bottom = _scissorRect.top + windowHeight;
+
 	while (true) {
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) { // メッセージがあるか確認
 			if (msg.message == WM_QUIT) { // WM_QUITメッセージならループを抜ける
@@ -324,10 +466,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		_cmdList->ResourceBarrier(1, &resourceBarrier);
 		_cmdList->ClearRenderTargetView(descHandle, clearColor, 0, nullptr);
 
+		_cmdList->SetPipelineState(_pipelineState);
+		_cmdList->SetGraphicsRootSignature(_rootSignature);
+		_cmdList->RSSetViewports(1, &_viewport);
+		_cmdList->RSSetScissorRects(1, &_scissorRect);
+		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_cmdList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		_cmdList->DrawInstanced(3, 1, 0, 0);
+
 		resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 		_cmdList->ResourceBarrier(1, &resourceBarrier);
-	
+
 		_cmdList->Close(); // コマンドリストをクローズして、コマンドの記録を終了する
 		ID3D12CommandList* cmdLists[] = { _cmdList };
 		_cmdQueue->ExecuteCommandLists(1, cmdLists);
