@@ -234,10 +234,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg = {};
 
-	DirectX::XMFLOAT3 vertices[3] = {
-		{-1.0f,  -1.0f,  0.0f},	// 左下
-		{-1.0f,   1.0f,  0.0f},	// 左上
-		{ 1.0f,  -1.0f,  0.0f}	// 右下
+	DirectX::XMFLOAT3 vertices[] = {
+		{-0.4f,  -0.7f,  0.0f},	// 左下
+		{-0.4f,   0.7f,  0.0f},	// 左上
+		{ 0.4f,  -0.7f,  0.0f},	// 右下
+		{ 0.4f,   0.7f,  0.0f}	// 右上
 	};
 
 	D3D12_HEAP_PROPERTIES heapProperties;
@@ -247,7 +248,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	heapProperties.CreationNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
 	heapProperties.VisibleNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
 
-	D3D12_RESOURCE_DESC resourceDesc;
+	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // リソースの次元を指定。今回は頂点バッファなのでD3D12_RESOURCE_DIMENSION_BUFFERを指定
 	resourceDesc.Width = sizeof(vertices); // リソースの幅を指定。今回は頂点データ全体のサイズを指定
 	resourceDesc.Height = 1; // リソースの高さを指定。バッファリソースの場合は1を指定
@@ -273,22 +274,71 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
-	DirectX::XMFLOAT3* vertexBufferAddress = nullptr;
+	DirectX::XMFLOAT3* _vertexBufferAddress = nullptr;
 	_vertexBuffer->Map(
 		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定
 		nullptr, // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をマップする
-		(void**)&vertexBufferAddress // マップされたアドレスを受け取る変数のアドレスを指定
+		(void**)&_vertexBufferAddress // マップされたアドレスを受け取る変数のアドレスを指定
 	);
-	std::copy(std::begin(vertices), std::end(vertices), vertexBufferAddress);
+	std::copy(std::begin(vertices), std::end(vertices), _vertexBufferAddress);
 	_vertexBuffer->Unmap(
 		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定 
 		nullptr // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をアンマップする
 	);
 
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-	vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = sizeof(vertices);
-	vertexBufferView.StrideInBytes = sizeof(vertices[0]);
+	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
+	_vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
+	_vertexBufferView.SizeInBytes = sizeof(vertices);
+	_vertexBufferView.StrideInBytes = sizeof(vertices[0]);
+
+	unsigned short indices[] = {
+		0, 1, 2,
+		1, 3, 2
+	};
+
+	D3D12_RESOURCE_DESC idxBufferResource = {};
+	idxBufferResource.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // リソースの次元を指定。今回はインデックスバッファなのでD3D12_RESOURCE_DIMENSION_BUFFERを指定
+	idxBufferResource.Width = sizeof(indices); // リソースの幅を指定。今回は頂点データ全体のサイズを指定
+	idxBufferResource.Height = 1; // リソースの高さを指定。バッファリソースの場合は1を指定
+	idxBufferResource.Alignment = 0; // リソースのアライメントを指定。0ならデフォルトのアライメントが使用される
+	idxBufferResource.DepthOrArraySize = 1; // リソースの深さまたは配列サイズを指定。バッファリソースの場合は1を指定
+	idxBufferResource.MipLevels = 1; // ミップレベルの数を指定。バッファリソースの場合は1を指定
+	idxBufferResource.Format = DXGI_FORMAT_UNKNOWN; // リソースのフォーマットを指定。バッファリソースの場合はDXGI_FORMAT_UNKNOWNを指定
+	idxBufferResource.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
+	idxBufferResource.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
+	idxBufferResource.Flags = D3D12_RESOURCE_FLAG_NONE; // リソースのフラグを指定。今回は特に必要ないのでD3D12_RESOURCE_FLAG_NONEを指定
+	idxBufferResource.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // リソースのレイアウトを指定。バッファリソースの場合はD3D12_TEXTURE_LAYOUT_ROW_MAJORを指定
+
+	ID3D12Resource* _indexBuffer = nullptr;
+	if (_dev->CreateCommittedResource(
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&idxBufferResource,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&_indexBuffer)
+	) != S_OK) 
+	{
+		DebugOutputFormatString("Failed to create index buffer");
+		return -1;
+	}
+
+	unsigned short* _indexBufferAddress = nullptr;
+	_indexBuffer->Map(
+		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定
+		nullptr, // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をマップする
+		(void**)&_indexBufferAddress // マップされたアドレスを受け取る変数のアドレスを指定
+	);
+	std::copy(std::begin(indices), std::end(indices), _indexBufferAddress);
+	_indexBuffer->Unmap(
+		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定 
+		nullptr // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をアンマップする
+	);
+
+	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
+	_indexBufferView.BufferLocation = _indexBuffer->GetGPUVirtualAddress();
+	_indexBufferView.SizeInBytes = sizeof(indices);
+	_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
 
 	ID3DBlob* _vsBlob = nullptr;
 	ID3DBlob* _psBlob = nullptr;
@@ -418,18 +468,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	D3D12_VIEWPORT _viewport = {};
-	_viewport.Width = windowWidth;
-	_viewport.Height = windowHeight;
-	_viewport.TopLeftX = 0.0f;
-	_viewport.TopLeftY = 0.0f;
-	_viewport.MinDepth = 0.0f;
-	_viewport.MaxDepth = 1.0f;
+	_viewport.Width = windowWidth; // ビューポートの幅を指定。今回はウィンドウの幅と同じにする
+	_viewport.Height = windowHeight; // ビューポートの高さを指定。今回はウィンドウの高さと同じにする
+	_viewport.TopLeftX = 0.0f; // ビューポートの左上のX座標を指定。今回は0にする
+	_viewport.TopLeftY = 0.0f; // ビューポートの左上のY座標を指定。今回は0にする
+	_viewport.MinDepth = 0.0f; // ビューポートの最小深度を指定。通常は0にする
+	_viewport.MaxDepth = 1.0f; // ビューポートの最大深度を指定。通常は1にする
 
 	D3D12_RECT _scissorRect = {};
-	_scissorRect.top = 0;
-	_scissorRect.left = 0;
-	_scissorRect.right = _scissorRect.left + windowWidth;
-	_scissorRect.bottom = _scissorRect.top + windowHeight;
+	_scissorRect.top = 0; // シザー矩形の上端のY座標を指定。今回は0にする
+	_scissorRect.left = 0; // シザー矩形の左端のX座標を指定。今回は0にする
+	_scissorRect.right = _scissorRect.left + windowWidth; // シザー矩形の右端のX座標を指定。今回は左端からウィンドウの幅だけ進める
+	_scissorRect.bottom = _scissorRect.top + windowHeight; // シザー矩形の下端のY座標を指定。今回は上端からウィンドウの高さだけ進める
 
 	while (true) {
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) { // メッセージがあるか確認
@@ -471,8 +521,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		_cmdList->RSSetViewports(1, &_viewport);
 		_cmdList->RSSetScissorRects(1, &_scissorRect);
 		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		_cmdList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		_cmdList->DrawInstanced(3, 1, 0, 0);
+		_cmdList->IASetVertexBuffers(0, 1, &_vertexBufferView);
+		_cmdList->IASetIndexBuffer(&_indexBufferView);
+		_cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 		resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -505,7 +556,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	UnregisterClass(w.lpszClassName, w.hInstance); // ウィンドウクラスの登録を解除
 
 	DebugOutputFormatString("Window Closed\n");
-	getchar();
-
+	
 	return 0;
 }
