@@ -43,6 +43,15 @@ void EnableDebugLayer() {
 #endif
 }
 
+struct Vertex {
+	DirectX::XMFLOAT3 pos;	
+	DirectX::XMFLOAT2 uv;	
+};
+
+struct TexRGBA {
+	unsigned char R, G, B, A;
+};
+
 #if _DEBUG
 int main() {
 #else
@@ -234,11 +243,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg = {};
 
-	DirectX::XMFLOAT3 vertices[] = {
-		{-0.4f,  -0.7f,  0.0f},	// 左下
-		{-0.4f,   0.7f,  0.0f},	// 左上
-		{ 0.4f,  -0.7f,  0.0f},	// 右下
-		{ 0.4f,   0.7f,  0.0f}	// 右上
+	Vertex vertices[] = {
+		{{-0.4f,  -0.7f,  0.0f}, {0.0f, 1.0f}},	// 左下
+		{{-0.4f,   0.7f,  0.0f}, {0.0f, 0.0f}},	// 左上
+		{{ 0.4f,  -0.7f,  0.0f}, {1.0f, 1.0f}},	// 右下
+		{{ 0.4f,   0.7f,  0.0f}, {1.0f, 0.0f}}	// 右上
 	};
 
 	D3D12_HEAP_PROPERTIES heapProperties;
@@ -274,7 +283,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
-	DirectX::XMFLOAT3* _vertexBufferAddress = nullptr;
+	Vertex* _vertexBufferAddress = nullptr;
 	_vertexBuffer->Map(
 		0, // サブリソースインデックスを指定。バッファリソースの場合は0を指定
 		nullptr, // サブリソースの範囲を指定。バッファリソースの場合はnullptrを指定して、全体をマップする
@@ -392,9 +401,154 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 	};
 
+	std::vector<TexRGBA> textureData(256 * 256);
+	for (auto& rgba : textureData) {
+		rgba.R = rand() % 256;
+		rgba.G = rand() % 256;
+		rgba.B = rand() % 256;
+		rgba.A = 255;
+	}
+
+	D3D12_HEAP_PROPERTIES _textureHeap = {};
+	_textureHeap.Type = D3D12_HEAP_TYPE_CUSTOM;
+	_textureHeap.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+	_textureHeap.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+	_textureHeap.CreationNodeMask = 0;
+	_textureHeap.VisibleNodeMask = 0;
+
+	D3D12_RESOURCE_DESC _textureResDesc = {};
+	_textureResDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	_textureResDesc.Width = 256;
+	_textureResDesc.Height = 256;
+	_textureResDesc.DepthOrArraySize = 1;
+	_textureResDesc.SampleDesc.Count = 1;
+	_textureResDesc.SampleDesc.Quality = 0;
+	_textureResDesc.MipLevels = 1;
+	_textureResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	_textureResDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	_textureResDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	ID3D12Resource* _textureBuffer = nullptr;
+	if (_dev->CreateCommittedResource(
+		&_textureHeap,
+		D3D12_HEAP_FLAG_NONE,
+		&_textureResDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		nullptr,
+		IID_PPV_ARGS(&_textureBuffer)
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create texture");
+		return -1;
+	}
+
+	if (_textureBuffer->WriteToSubresource(
+		0,
+		nullptr,
+		textureData.data(),
+		sizeof(TexRGBA) * 256,
+		sizeof(TexRGBA) * textureData.size()
+	) != S_OK) {
+		DebugOutputFormatString("Failed to copy texture resource");
+		return -1;
+	}
+
+	ID3D12DescriptorHeap* _textureDescHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC _textureDescHeapDesc = {};
+	_textureDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	_textureDescHeapDesc.NodeMask = 0;
+	_textureDescHeapDesc.NumDescriptors = 1;
+	_textureDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	if (_dev->CreateDescriptorHeap(
+		&_textureDescHeapDesc,
+		IID_PPV_ARGS(&_textureDescHeap)
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create texture descriptor heap!");
+		return -1;
+	}
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC _textureResourceView = {};
+	_textureResourceView.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	_textureResourceView.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	_textureResourceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	_textureResourceView.Texture2D.MipLevels = 1;
+	_dev->CreateShaderResourceView(
+		_textureBuffer,
+		&_textureResourceView,
+		_textureDescHeap->GetCPUDescriptorHandleForHeapStart()
+	);
+
+	D3D12_ROOT_PARAMETER _rootParameter = {};
+	_rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	_rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	
+	D3D12_DESCRIPTOR_RANGE _descTableRange = {};
+	_descTableRange.NumDescriptors = 1;
+	_descTableRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	_descTableRange.BaseShaderRegister = 0;
+	_descTableRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	
+	_rootParameter.DescriptorTable.NumDescriptorRanges = 1;
+	_rootParameter.DescriptorTable.pDescriptorRanges = &_descTableRange;
+
+	// D3D12_ROOT_PARAMETER _constRootParameter = {};
+	// _constRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	// _constRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	// _constRootParameter.Constants.ShaderRegister = 0;
+	// _constRootParameter.Constants.RegisterSpace = 0;
+	// _constRootParameter.Constants.Num32BitValues = 8;
+
+	// D3D12_ROOT_PARAMETER _rootParams[2] = {_rootParameter, _constRootParameter};
+
+	D3D12_STATIC_SAMPLER_DESC _samplerDesc = {};
+	_samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	_samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	_samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	_samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	_samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	_samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+	_samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	_samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	D3D12_ROOT_SIGNATURE_DESC _rootSignatureDesc = {};
+	_rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	_rootSignatureDesc.NumParameters = 1;
+	_rootSignatureDesc.pParameters = &_rootParameter;
+	_rootSignatureDesc.NumStaticSamplers = 1;
+	_rootSignatureDesc.pStaticSamplers = &_samplerDesc;
+
+	ID3DBlob* rootSignatureBlob = nullptr;
+	result = D3D12SerializeRootSignature(
+		&_rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1, // ルートシグネチャのバージョンを指定。今回は1.0を指定
+		&rootSignatureBlob,
+		&_errorBlob
+	);
+	if (FAILED(result)) {
+		std::string errorMsg;
+		errorMsg.resize(_errorBlob->GetBufferSize());
+		std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
+		errorMsg += "\n";
+		::OutputDebugStringA(errorMsg.c_str());
+		return -1;
+	}
+
+	ID3D12RootSignature* _rootSignature = nullptr;
+	if (_dev->CreateRootSignature(
+		0, // ノードマスク。シングルGPUの場合は0で問題ない
+		rootSignatureBlob->GetBufferPointer(), // ルートシグネチャのバイナリデータを指定
+		rootSignatureBlob->GetBufferSize(), // ルートシグネチャのバイナリデータのサイズを指定
+		IID_PPV_ARGS(&_rootSignature) // ルートシグネチャのポインタを受け取る変数のアドレスを指定
+	) != S_OK) {
+		DebugOutputFormatString("Failed to create root signature");
+		rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
+		return -1;
+	}
+	rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
+	
 	ID3D12PipelineState* _pipelineState = nullptr;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
 	pipelineDesc.VS.pShaderBytecode = _vsBlob->GetBufferPointer();
@@ -425,38 +579,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
 	pipelineDesc.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
 
-	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; //今回は頂点情報だけをルートパラメータとして使用するので、D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUTを指定して、入力アセンブラの入力レイアウトを使用できるようにする
-
-	ID3DBlob* rootSignatureBlob = nullptr;
-	result = D3D12SerializeRootSignature(
-		&rootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1, // ルートシグネチャのバージョンを指定。今回は1.0を指定
-		&rootSignatureBlob,
-		&_errorBlob
-	);
-	if (FAILED(result)) {
-		std::string errorMsg;
-		errorMsg.resize(_errorBlob->GetBufferSize());
-		std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
-		errorMsg += "\n";
-		::OutputDebugStringA(errorMsg.c_str());
-		return -1;
-	}
-
-	ID3D12RootSignature* _rootSignature = nullptr;
-	if (_dev->CreateRootSignature(
-		0, // ノードマスク。シングルGPUの場合は0で問題ない
-		rootSignatureBlob->GetBufferPointer(), // ルートシグネチャのバイナリデータを指定
-		rootSignatureBlob->GetBufferSize(), // ルートシグネチャのバイナリデータのサイズを指定
-		IID_PPV_ARGS(&_rootSignature) // ルートシグネチャのポインタを受け取る変数のアドレスを指定
-	) != S_OK) {
-		DebugOutputFormatString("Failed to create root signature");
-		rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
-		return -1;
-	}
-	rootSignatureBlob->Release(); // ルートシグネチャのバイナリデータはもう必要ないので解放する
-	
 	pipelineDesc.pRootSignature = _rootSignature; // パイプラインステートのルートシグネチャを指定
 
 	if (_dev->CreateGraphicsPipelineState(
@@ -516,10 +638,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		_cmdList->ResourceBarrier(1, &resourceBarrier);
 		_cmdList->ClearRenderTargetView(descHandle, clearColor, 0, nullptr);
 
-		_cmdList->SetPipelineState(_pipelineState);
-		_cmdList->SetGraphicsRootSignature(_rootSignature);
 		_cmdList->RSSetViewports(1, &_viewport);
 		_cmdList->RSSetScissorRects(1, &_scissorRect);
+
+		_cmdList->SetPipelineState(_pipelineState);
+		_cmdList->SetGraphicsRootSignature(_rootSignature);
+		_cmdList->SetDescriptorHeaps(1, &_textureDescHeap);
+		_cmdList->SetGraphicsRootDescriptorTable(0, _textureDescHeap->GetGPUDescriptorHandleForHeapStart());
+		
+		// float color[] = {
+		// 	1.0f, 0.0f, 0.0f, 1.0f,
+		// 	0.0f, 1.0f, 0.0f, 1.0f
+		// };
+		// _cmdList->SetGraphicsRoot32BitConstants(1, 8, &color, 0);
+
 		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		_cmdList->IASetVertexBuffers(0, 1, &_vertexBufferView);
 		_cmdList->IASetIndexBuffer(&_indexBufferView);
