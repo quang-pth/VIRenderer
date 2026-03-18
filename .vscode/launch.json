@@ -2,12 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Windows",
+            "name": "Debug X64",
             "type": "cppvsdbg",
             "request": "launch",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/build/Game/Debug",
-            "program": "${workspaceFolder}/build/Game/Debug/Game.exe"
+            "cwd": "${workspaceFolder}/build/Debug/x64/Game/Debug",
+            "program": "${workspaceFolder}/build/Debug/x64/Game/Debug/Game.exe"
+        },
+        {
+            "name": "Release X64",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/build/Release/x64/Game/Release",
+            "program": "${workspaceFolder}/build/Release/x64/Game/Release/Game.exe"
         }
     ]
 }

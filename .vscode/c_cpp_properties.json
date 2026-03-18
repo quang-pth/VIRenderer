@@ -3,9 +3,10 @@
         {
             "name": "configs",
             "includePath": [
-                "${workspaceFolder}/Vendor/DirectX-Headers/include"
+                "${workspaceFolder}/Vendor/DirectX-Headers/include",
+                "${workspaceFolder}/Vendor/DirectXTex/DirectXTex"
             ],
-            "defines": ["_DEBUG", "VI_API"],
+            "defines": ["_DEBUG"],
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "${default}"

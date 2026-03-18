@@ -2,8 +2,19 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "build everything",
-            "windows": {"command": "${workspaceFolder}/build-window.bat"},  
+            "label": "Debug X64",
+            "windows": {"command": "${workspaceFolder}/build-window.bat Debug x64"},  
+            "problemMatcher": ["$gcc"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Release X64",
+            "windows": {"command": "${workspaceFolder}/build-window.bat Release x64"},  
             "problemMatcher": ["$gcc"],
             "options": {"cwd": "${workspaceFolder}"},
             "group":{

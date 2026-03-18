@@ -8,6 +8,8 @@
 #include<d3dcompiler.h>
 #include<DirectXMath.h>
 #include<vector>
+#include<xstring>
+#include<DirectXTex.h>
 
 LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (msg == WM_DESTROY) {
@@ -55,7 +57,7 @@ struct TexRGBA {
 #if _DEBUG
 int main() {
 #else
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 #endif
 	WNDCLASSEX w = {}; // ウィンドウクラスの構造体
 	w.cbSize = sizeof(WNDCLASSEX); // 構造体のサイズを指定
@@ -220,6 +222,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
+	D3D12_RENDER_TARGET_VIEW_DESC _rtvDesc = {};
+	_rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	_rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
 	DXGI_SWAP_CHAIN_DESC desc = {};
 	_swapChain->GetDesc(&desc);
 	std::vector<ID3D12Resource*> backBuffers(desc.BufferCount);
@@ -229,7 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (uint8_t i = 0; i < desc.BufferCount; ++i) {
 		_swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i])); // バックバッファを取得
 		heapHandle.ptr += i * descHeapSize; // デスクリプタヒープのハンドルをバックバッファの数だけ進める
-		_dev->CreateRenderTargetView(backBuffers[i], nullptr, heapHandle); // レンダーターゲットビューを作成。今回はシンプルにするために、ビューの設定はnullptrを指定
+		_dev->CreateRenderTargetView(backBuffers[i], &_rtvDesc, heapHandle); // レンダーターゲットビューを作成。今回はシンプルにするために、ビューの設定はnullptrを指定
 	}
 
 	if (_dev->CreateFence(
@@ -405,13 +411,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 	};
 
-	std::vector<TexRGBA> textureData(256 * 256);
-	for (auto& rgba : textureData) {
-		rgba.R = rand() % 256;
-		rgba.G = rand() % 256;
-		rgba.B = rand() % 256;
-		rgba.A = 255;
+	DirectX::TexMetadata metaData = {};
+	DirectX::ScratchImage scratchImage = {};
+	if (DirectX::LoadFromWICFile(
+		L"Assets/Texture/phrolova-8.png",
+		DirectX::WIC_FLAGS_NONE,
+		&metaData, 
+		scratchImage
+	) != S_OK ) {
+		DebugOutputFormatString("Failed to load image");
+		return -1;
 	}
+
+	const DirectX::Image* image = scratchImage.GetImage(0, 0, 0);
 
 	D3D12_HEAP_PROPERTIES _textureHeap = {};
 	_textureHeap.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -421,14 +433,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	_textureHeap.VisibleNodeMask = 0;
 
 	D3D12_RESOURCE_DESC _textureResDesc = {};
-	_textureResDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	_textureResDesc.Width = 256;
-	_textureResDesc.Height = 256;
-	_textureResDesc.DepthOrArraySize = 1;
+	_textureResDesc.Format = metaData.format;
+	_textureResDesc.Width = metaData.width;
+	_textureResDesc.Height = metaData.height;
+	_textureResDesc.DepthOrArraySize = metaData.arraySize;
 	_textureResDesc.SampleDesc.Count = 1;
 	_textureResDesc.SampleDesc.Quality = 0;
-	_textureResDesc.MipLevels = 1;
-	_textureResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	_textureResDesc.MipLevels = metaData.mipLevels;
+	_textureResDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metaData.dimension);
 	_textureResDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	_textureResDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
@@ -448,9 +460,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	if (_textureBuffer->WriteToSubresource(
 		0,
 		nullptr,
-		textureData.data(),
-		sizeof(TexRGBA) * 256,
-		sizeof(TexRGBA) * textureData.size()
+		image->pixels,
+		image->rowPitch,
+		image->slicePitch
 	) != S_OK) {
 		DebugOutputFormatString("Failed to copy texture resource");
 		return -1;
@@ -471,7 +483,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC _textureResourceView = {};
-	_textureResourceView.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	_textureResourceView.Format = metaData.format;
 	_textureResourceView.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	_textureResourceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	_textureResourceView.Texture2D.MipLevels = 1;
