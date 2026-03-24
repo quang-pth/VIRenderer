@@ -4,6 +4,7 @@
 #include<iostream>
 #endif
 #include<d3d12.h>
+#include<d3dx12.h>
 #include<dxgi1_6.h>
 #include<d3dcompiler.h>
 #include<DirectXMath.h>
@@ -260,25 +261,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{{ 0.4f,   0.7f,  0.0f}, {1.0f, 0.0f}}	// 右上
 	};
 
-	D3D12_HEAP_PROPERTIES heapProperties;
-	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // ヒープのタイプを指定。CPUからGPUにデータを転送するためのヒープなのでD3D12_HEAP_TYPE_UPLOADを指定
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // CPUのページプロパティ。D3D12_HEAP_TYPE_DEFAULTを使用する場合はD3D12_CPU_PAGE_PROPERTY_UNKNOWNを指定する必要がある
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN; // メモリプールの優先順位。D3D12_HEAP_TYPE_DEFAULTを使用する場合はD3D12_MEMORY_POOL_UNKNOWNを指定する必要がある
-	heapProperties.CreationNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
-	heapProperties.VisibleNodeMask = 0; // マルチGPU環境で使用するノードマスク。シングルGPUの場合は0で問題ない
-
-	D3D12_RESOURCE_DESC resourceDesc = {};
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // リソースの次元を指定。今回は頂点バッファなのでD3D12_RESOURCE_DIMENSION_BUFFERを指定
-	resourceDesc.Width = sizeof(vertices); // リソースの幅を指定。今回は頂点データ全体のサイズを指定
-	resourceDesc.Height = 1; // リソースの高さを指定。バッファリソースの場合は1を指定
-	resourceDesc.Alignment = 0; // リソースのアライメントを指定。0ならデフォルトのアライメントが使用される
-	resourceDesc.DepthOrArraySize = 1; // リソースの深さまたは配列サイズを指定。バッファリソースの場合は1を指定
-	resourceDesc.MipLevels = 1; // ミップレベルの数を指定。バッファリソースの場合は1を指定
-	resourceDesc.Format = DXGI_FORMAT_UNKNOWN; // リソースのフォーマットを指定。バッファリソースの場合はDXGI_FORMAT_UNKNOWNを指定
-	resourceDesc.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
-	resourceDesc.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // リソースのフラグを指定。今回は特に必要ないのでD3D12_RESOURCE_FLAG_NONEを指定
-	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // リソースのレイアウトを指定。バッファリソースの場合はD3D12_TEXTURE_LAYOUT_ROW_MAJORを指定
+	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices));
 
 	if (_dev->CreateCommittedResource(
 		&heapProperties,
@@ -315,18 +299,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		1, 3, 2
 	};
 
-	D3D12_RESOURCE_DESC idxBufferResource = {};
-	idxBufferResource.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // リソースの次元を指定。今回はインデックスバッファなのでD3D12_RESOURCE_DIMENSION_BUFFERを指定
-	idxBufferResource.Width = sizeof(indices); // リソースの幅を指定。今回は頂点データ全体のサイズを指定
-	idxBufferResource.Height = 1; // リソースの高さを指定。バッファリソースの場合は1を指定
-	idxBufferResource.Alignment = 0; // リソースのアライメントを指定。0ならデフォルトのアライメントが使用される
-	idxBufferResource.DepthOrArraySize = 1; // リソースの深さまたは配列サイズを指定。バッファリソースの場合は1を指定
-	idxBufferResource.MipLevels = 1; // ミップレベルの数を指定。バッファリソースの場合は1を指定
-	idxBufferResource.Format = DXGI_FORMAT_UNKNOWN; // リソースのフォーマットを指定。バッファリソースの場合はDXGI_FORMAT_UNKNOWNを指定
-	idxBufferResource.SampleDesc.Count = 1; // マルチサンプリングのサンプル数を指定。バッファリソースの場合は1を指定
-	idxBufferResource.SampleDesc.Quality = 0; // マルチサンプリングの品質レベルを指定。バッファリソースの場合は0を指定
-	idxBufferResource.Flags = D3D12_RESOURCE_FLAG_NONE; // リソースのフラグを指定。今回は特に必要ないのでD3D12_RESOURCE_FLAG_NONEを指定
-	idxBufferResource.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // リソースのレイアウトを指定。バッファリソースの場合はD3D12_TEXTURE_LAYOUT_ROW_MAJORを指定
+	D3D12_RESOURCE_DESC idxBufferResource = CD3DX12_RESOURCE_DESC::Buffer(sizeof(indices));
 
 	ID3D12Resource* _indexBuffer = nullptr;
 	if (_dev->CreateCommittedResource(
@@ -428,32 +401,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	const DirectX::Image* image = scratchImage.GetImage(0, 0, 0);
-
-	D3D12_HEAP_PROPERTIES _textureHeap = {};
-	_textureHeap.Type = D3D12_HEAP_TYPE_CUSTOM;
-	_textureHeap.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-	_textureHeap.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-	_textureHeap.CreationNodeMask = 0;
-	_textureHeap.VisibleNodeMask = 0;
-
-	D3D12_HEAP_PROPERTIES _uploadHeapProperties = {};
-	_uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-	_uploadHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	_uploadHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	_uploadHeapProperties.CreationNodeMask = 0;
-	_uploadHeapProperties.VisibleNodeMask = 0;
-
-	D3D12_RESOURCE_DESC _uploadResourceDesc = {};
-	_uploadResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-	_uploadResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	_uploadResourceDesc.Width = AlignmentSize(image->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * image->height;
-	_uploadResourceDesc.Height = 1;
-	_uploadResourceDesc.DepthOrArraySize = 1;
-	_uploadResourceDesc.MipLevels = 1;
-	_uploadResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	_uploadResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	_uploadResourceDesc.SampleDesc.Count = 1;
-	_uploadResourceDesc.SampleDesc.Quality = 0;
+	D3D12_HEAP_PROPERTIES _uploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_RESOURCE_DESC _uploadResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignmentSize(image->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * image->height);
 
 	// アップロード用のリソース作成
 	ID3D12Resource* _uploadBuffer = nullptr;
@@ -469,14 +418,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;
 	}
 
-	D3D12_HEAP_PROPERTIES _textureHeapProperties = {};
-	_textureHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-	_textureHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	_textureHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	_textureHeapProperties.CreationNodeMask = 0;
-	_textureHeapProperties.VisibleNodeMask = 0;
-
-	D3D12_RESOURCE_DESC _textureResourceDesc = {};
+	D3D12_HEAP_PROPERTIES _textureHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	D3D12_RESOURCE_DESC _textureResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(metaData.width);
 	_textureResourceDesc.Format = metaData.format;
 	_textureResourceDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metaData.dimension);
 	_textureResourceDesc.Width = metaData.width;
@@ -484,9 +427,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	_textureResourceDesc.DepthOrArraySize = metaData.arraySize;
 	_textureResourceDesc.MipLevels = metaData.mipLevels;
 	_textureResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	_textureResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	_textureResourceDesc.SampleDesc.Count = 1;
-	_textureResourceDesc.SampleDesc.Quality = 0;
 
 	// コピー先用のリソース作成
 	ID3D12Resource* _textureBuffer = nullptr;
@@ -507,7 +447,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	uint8_t* _mapForImage = nullptr;
 	_uploadBuffer->Map(0, nullptr, (void**)&_mapForImage);
 	for (int y = 0; y < image->height; ++y) {
-		std::copy_n(srcAddress, alignedRowPitch, _mapForImage);
+		std::copy_n(srcAddress, image->rowPitch, _mapForImage);
 		srcAddress += image->rowPitch;
 		_mapForImage += alignedRowPitch;
 	}
@@ -523,21 +463,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	_copySrcLocation.PlacedFootprint.Footprint.RowPitch = AlignmentSize(image->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	_copySrcLocation.PlacedFootprint.Footprint.Format = image->format;
 
-	D3D12_TEXTURE_COPY_LOCATION _copyDstLocation = {};
-	_copyDstLocation.pResource = _textureBuffer;
-	_copyDstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-	_copyDstLocation.SubresourceIndex = 0;
+	D3D12_TEXTURE_COPY_LOCATION _copyDstLocation = CD3DX12_TEXTURE_COPY_LOCATION(_textureBuffer, 0);
 
 	{
 		_cmdList->CopyTextureRegion(&_copyDstLocation, 0, 0, 0, &_copySrcLocation, nullptr);
-		D3D12_RESOURCE_BARRIER barrierDesc = {};
-		barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrierDesc.Transition.pResource = _textureBuffer;
-		barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES; 
-		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		_cmdList->ResourceBarrier(1, &barrierDesc);
+		_cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+			_textureBuffer,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+		));
 		_cmdList->Close();
 		ID3D12CommandList* cmdLists[] = { _cmdList };
 		_cmdQueue->ExecuteCommandLists(1, cmdLists);
@@ -704,6 +638,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	_scissorRect.right = _scissorRect.left + windowWidth; // シザー矩形の右端のX座標を指定。今回は左端からウィンドウの幅だけ進める
 	_scissorRect.bottom = _scissorRect.top + windowHeight; // シザー矩形の下端のY座標を指定。今回は上端からウィンドウの高さだけ進める
 
+	D3D12_RESOURCE_BARRIER resourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		nullptr,
+		D3D12_RESOURCE_STATE_PRESENT,
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		0
+	);
+
 	while (true) {
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) { // メッセージがあるか確認
 			if (msg.message == WM_QUIT) { // WM_QUITメッセージならループを抜ける
@@ -727,15 +668,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			nullptr // デプスステンシルビューのハンドルを指定。今回はデプスステンシルバッファを使わないのでnullptrを指定
 		);
 		
-		D3D12_RESOURCE_BARRIER resourceBarrier = {};
-		resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f};
 		resourceBarrier.Transition.pResource = backBuffers[backBufferIdx];
-		resourceBarrier.Transition.Subresource = 0;
 		resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		
-		float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f};
 		_cmdList->ResourceBarrier(1, &resourceBarrier);
 		_cmdList->ClearRenderTargetView(descHandle, clearColor, 0, nullptr);
 

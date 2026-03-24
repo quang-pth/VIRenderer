@@ -16,6 +16,7 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/Vendor/DirectX-Headers/include
     ${CMAKE_SOURCE_DIR}/Vendor/DirectXTex/DirectXTex
+    ${CMAKE_SOURCE_DIR}/Vendor/DirectXTex/Common
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC d3d12 d3dcompiler dxgi DirectXTex)
