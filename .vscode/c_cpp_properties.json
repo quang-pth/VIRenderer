@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/Vendor/DirectX-Headers/include",
                 "${workspaceFolder}/Vendor/DirectXTex/DirectXTex",
-                "${workspaceFolder}/Vendor/DirectXTex/Common"
+                "${workspaceFolder}/Vendor/DirectXTex/Common",
+                "${workspaceFolder}/Vendor/spdlog/include",
+                "${workspaceFolder}/Engine"
             ],
             "defines": ["_DEBUG"],
             "cStandard": "c17",

@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug X64",
+            "name": "Game Debug X64",
             "type": "cppvsdbg",
             "request": "launch",
             "console": "integratedTerminal",
@@ -10,12 +10,28 @@
             "program": "${workspaceFolder}/build/Debug/x64/Game/Debug/Game.exe"
         },
         {
-            "name": "Release X64",
+            "name": "Game Release X64",
             "type": "cppvsdbg",
             "request": "launch",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/build/Release/x64/Game/Release",
             "program": "${workspaceFolder}/build/Release/x64/Game/Release/Game.exe"
+        },
+        {
+            "name": "MMDApp Debug X64",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/build/Debug/x64/MMDApp/Debug",
+            "program": "${workspaceFolder}/build/Debug/x64/MMDApp/Debug/MMDApp.exe"
+        },
+        {
+            "name": "MMDApp Release X64",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/build/Release/x64/MMDApp/Release",
+            "program": "${workspaceFolder}/build/Release/x64/MMDApp/Release/MMDApp.exe"
         }
     ]
 }

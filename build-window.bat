@@ -3,6 +3,7 @@ cls
 
 set BUILD_TYPE=%1
 set ARCH=%2
+set PROJECT_NAME=%3
 
 if "%BUILD_TYPE%"=="" set BUILD_TYPE=Debug
 if /I "%BUILD_TYPE%" NEQ "Debug" if /I "%BUILD_TYPE%" NEQ "Release" (
@@ -27,7 +28,7 @@ rem generate cmake files
 cmake -O . -B ./build/%BUILD_TYPE%/%ARCH% -A %ARCH% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_SHARED_LIBS=OFF
 
 rem copy assets & .dll files to output dir
-robocopy "./Game/Assets"  "./build/%BUILD_TYPE%/%ARCH%/Game/%BUILD_TYPE%/Assets" /E
+robocopy "./%PROJECT_NAME%/Assets"  "./build/%BUILD_TYPE%/%ARCH%/%PROJECT_NAME%/%BUILD_TYPE%/Assets" /E
 robocopy "./Vendors/bin/"  "./build/%BUILD_TYPE%/%ARCH%/lib/%BUILD_TYPE%/" /E
 
 rem compile project

@@ -1,0 +1,17 @@
+#include"Core/Application.h"
+
+#if _DEBUG
+int main() {
+#else
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+#endif
+    VIEngine::Application* application = VIEngine::CreateApplication();
+
+    if (application->Init()) {
+        application->Run();
+    }
+    application->Shutdown();
+    VI_FREE_MEMORY(application);
+
+    return 0;
+}
