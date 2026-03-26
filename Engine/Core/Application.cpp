@@ -12,7 +12,6 @@ namespace VIEngine {
     }
 
     bool Application::Init() {
-        Logger::Init();
         CORE_LOG_INFO("Init application");
         return true;
     }

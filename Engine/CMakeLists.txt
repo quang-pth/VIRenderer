@@ -3,10 +3,13 @@ project("Engine")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
-file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp CMAKE_CONFIGURE_DEPENDS)
-add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
+file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Core/*.cpp CMAKE_CONFIGURE_DEPENDS)
 
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/pch.h)
+if(WIN32)
+    list(APPEND SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Window/WindowEntry.cpp)
+endif()
+
+add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
 
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES 
@@ -14,6 +17,8 @@ if(WIN32)
     LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
     )
 endif()
+
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/pch.h)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

@@ -1,12 +1,15 @@
 #include"Core/Application.h"
+#include"Core/Logger/Logger.h"
 
-#if _DEBUG
+#ifdef _DEBUG
 int main() {
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 #endif
     VIEngine::Application* application = VIEngine::CreateApplication();
 
+    VIEngine::Logger::Init();
+    
     if (application->Init()) {
         application->Run();
     }
