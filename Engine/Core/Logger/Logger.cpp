@@ -14,10 +14,10 @@ namespace VIEngine {
 
 		sCoreLogger = spdlog::stdout_color_mt("VIEngine");
 		sCoreLogger->set_level(spdlog::level::trace);
-        VI_ASSERT(sCoreLogger.get() != nullptr && "Failed to init Core Logger");
+        VI_ASSERT(sCoreLogger != nullptr && "Failed to init Core Logger");
         
 		sClientLogger = spdlog::stdout_color_mt("Client");
 		sClientLogger->set_level(spdlog::level::trace);
-        VI_ASSERT(sClientLogger.get() != nullptr && "Failed to init Client Logger");
+        VI_ASSERT(sClientLogger != nullptr && "Failed to init Client Logger");
 	}
 }

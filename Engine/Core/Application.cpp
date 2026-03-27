@@ -4,7 +4,7 @@
 namespace VIEngine {
     Application* Application::sInstance = nullptr;
 
-    Application& Application::Get() {
+    const Application& Application::Get() {
         return *sInstance;
     }
 
@@ -13,6 +13,16 @@ namespace VIEngine {
 
     bool Application::Init() {
         CORE_LOG_INFO("Init application");
+        sInstance = this;
+        
+        mWindow.reset(Window::Create(mAppConfig.WindowConfig));
+        VI_ASSERT(mWindow != nullptr && "Failed to create application window");
+
+        if (!mWindow->Init()) {
+            CORE_LOG_CRITICAL("Failed to init application window");
+            return false;
+        }
+
         return true;
     }
 
@@ -21,6 +31,7 @@ namespace VIEngine {
     }
     
     void Application::Shutdown() {
+        mWindow->Shutdown();
         CORE_LOG_INFO("Shutdown appplication");
     }
 }

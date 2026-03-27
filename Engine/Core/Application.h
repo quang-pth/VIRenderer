@@ -1,22 +1,22 @@
 #pragma once
 #include"pch.h"
+#include"Core/Window/Window.h"
 
 namespace VIEngine {
     struct VI_API ApplicationConfiguration {
-		uint16_t Width, Height;
-		const char* Title;
+		WindowConfiguration WindowConfig;
 	};
 
     class VI_API Application {
     public:
-		static Application& Get();
+		static const Application& Get();
 	private:
 		static Application* sInstance;
 	public:
 		virtual ~Application() = default;
-		bool Init();
+		virtual bool Init();
         void Run();
-        void Shutdown();
+        virtual void Shutdown();
         VI_FORCE_INLINE const ApplicationConfiguration& GetConfig() const { mAppConfig; }
 
         virtual void OnInitClient() = 0;
@@ -26,6 +26,7 @@ namespace VIEngine {
         Application(const ApplicationConfiguration&);
     private:
         ApplicationConfiguration mAppConfig;
+        std::unique_ptr<Window> mWindow;
     };
 
     extern Application* CreateApplication();

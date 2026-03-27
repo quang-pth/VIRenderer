@@ -37,12 +37,12 @@ namespace VIEngine {
 	#define CORE_LOG_INFO(...)
 	#define CORE_LOG_WARN(...)
 	#define CORE_LOG_ERROR(...)
-	#define CORE_LOG_CIRITICAL(...)
+	#define CORE_LOG_CRITICAL(...)
 
 	#define LOG_TRACE(...)
 	#define LOG_DEBUG(...)
 	#define LOG_INFO(...)
 	#define LOG_WARN(...)
 	#define LOG_ERROR(...)
-	#define LOG_CIRITICAL(...)
+	#define LOG_CRITICAL(...)
 #endif
