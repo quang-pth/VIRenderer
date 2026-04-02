@@ -1,6 +1,8 @@
 #pragma once
 #include"pch.h"
 #include"Core/Window/Window.h"
+#include"Core/Time/Timer.h"
+#include"Core/Event/EventManager.h"
 
 namespace VIEngine {
     struct VI_API ApplicationConfiguration {
@@ -9,7 +11,7 @@ namespace VIEngine {
 
     class VI_API Application {
     public:
-		static const Application& Get();
+		static Application& Get();
 	private:
 		static Application* sInstance;
 	public:
@@ -17,7 +19,10 @@ namespace VIEngine {
 		virtual bool Init();
         void Run();
         virtual void Shutdown();
-        VI_FORCE_INLINE const ApplicationConfiguration& GetConfig() const { mAppConfig; }
+
+        VI_FORCE_INLINE const ApplicationConfiguration& GetConfig() const { return mAppConfig; }
+        VI_FORCE_INLINE EventManager& GetEventManager() { return mEventManager; }
+        VI_FORCE_INLINE size_t GetFrameCount() const { return mFrameCount; }
 
         virtual void OnInitClient() = 0;
         virtual void OnShutdownClient() = 0;
@@ -25,8 +30,20 @@ namespace VIEngine {
         Application() = default;
         Application(const ApplicationConfiguration&);
     private:
+        bool OnKeyPressed(const EventContext& eventContext);
+        bool OnKeyReleased(const EventContext& eventContext);
+        bool OnMousePressed(const EventContext& eventContext);
+        bool OnMouseReleased(const EventContext& eventContext);
+        bool OnMouseMoved(const EventContext& eventContext);
+        bool OnMouseWheel(const EventContext& eventContext);
+        bool OnWindowQuit(const EventContext& eventContext);
+    private:
         ApplicationConfiguration mAppConfig;
         std::unique_ptr<Window> mWindow;
+        bool mIsRunning = true;
+        size_t mFrameCount;
+        Timer mTimer;
+        EventManager mEventManager;
     };
 
     extern Application* CreateApplication();

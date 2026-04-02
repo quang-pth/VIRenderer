@@ -1,6 +1,7 @@
 #include"Platform/Windows/Window/WindowsWindow.h"
 #include"Core/Logger/Logger.h"
-#include<Windows.h>
+#include"Platform/Windows/Input/WindowsKeyCode.h"
+#include<windowsx.h>
 
 namespace VIEngine {
     Window* Window::Create(uint16_t width, uint16_t height, const std::string& title) {
@@ -12,13 +13,115 @@ namespace VIEngine {
     }
 
     LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
+        Application& application = Application::Get();
+        
+        int16_t mouseX = GET_X_LPARAM(wparam);
+        int16_t mouseY = GET_Y_LPARAM(wparam);
         switch (msg)
         {
             case WM_KEYDOWN:
-                if (wparam == VK_ESCAPE) {
-                    // TODO: Dispatch event to application
-                    DestroyWindow(wind);
-                }
+                application.GetEventManager().ExecuteEvent({
+                    "ON_KEY_PRESSED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineKeyCode(wparam)
+                    }
+                });
+                break;
+            case WM_KEYUP:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_KEY_RELEASED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineKeyCode(wparam)
+                    }
+                });
+                break;
+            case WM_LBUTTONDOWN:
+            case WM_RBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_XBUTTONDOWN:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_PRESSED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineMouseButton(wparam),
+                        mouseX,
+                        mouseY
+                    }
+                });
+                break;
+            case WM_LBUTTONUP:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_RELEASED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineMouseButton(MK_LBUTTON),
+                        mouseX,
+                        mouseY
+                    }
+                });
+                break;
+            case WM_RBUTTONUP:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_RELEASED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineMouseButton(MK_RBUTTON),
+                        mouseX,
+                        mouseY
+                    }
+                });
+                break;
+            case WM_MBUTTONUP:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_RELEASED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineMouseButton(MK_MBUTTON),
+                        mouseX,
+                        mouseY
+                    }
+                });
+                break;
+            case WM_XBUTTONUP:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_RELEASED",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        WindowsToEngineMouseButton(wparam),
+                        mouseX,
+                        mouseY
+                    }
+                });
+                break;
+            case WM_MOUSEMOVE:
+                // application.GetEventManager().ExecuteEvent({
+                //     "ON_MOUSE_MOVED",
+                //     application.GetFrameCount(),
+                //     EEventPriority::HIGH,
+                //     {
+                //         mouseX,
+                //         mouseY
+                //     }
+                // });
+                break;
+            case WM_MOUSEWHEEL:
+                application.GetEventManager().ExecuteEvent({
+                    "ON_MOUSE_WHEEL",
+                    application.GetFrameCount(),
+                    EEventPriority::HIGH,
+                    {
+                        GET_WHEEL_DELTA_WPARAM(wparam)
+                    }
+                });
                 break;
             case WM_DESTROY:
                 PostQuitMessage(0);
@@ -52,12 +155,15 @@ namespace VIEngine {
         return message;
     }
 
-    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : Window(width, height, title) 
+    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : 
+        Window(width, height, title), mHWND(), mMessage() 
     {
         
     }
 
-    WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : Window(windowConfig) {
+    WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
+        Window(windowConfig), mHWND(), mMessage()  
+    {
 
     }
 
@@ -81,7 +187,7 @@ namespace VIEngine {
         RECT wrc = { 0, 0, mConfiguration.Width, mConfiguration.Height };
         AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE);
         
-        HWND hwnd = CreateWindow(
+        mHWND = CreateWindow(
             w.lpszClassName, 
             (mConfiguration.Title.c_str()),
             WS_OVERLAPPEDWINDOW,
@@ -95,18 +201,39 @@ namespace VIEngine {
             NULL 
         );
 
-        if (hwnd == NULL) {
+        if (mHWND == NULL) {
             std::string error = GetErrorString();
             MessageBoxA(NULL, error.c_str(), "Create Window Error", MB_ICONERROR);
             return false;
         }
 	
-    	ShowWindow(hwnd, SW_SHOW);
-
+    	ShowWindow(mHWND, SW_SHOW);
+        
         return true;
+    }
+
+    void WindowsWindow::Update() {
+        Application& application = Application::Get();
+        EventContext quitEventContext{"ON_WINDOW_QUIT", application.GetFrameCount(), EEventPriority::CRITICAL, {}};
+
+        if (PeekMessage(&mMessage, nullptr, 0, 0, PM_REMOVE)) {
+			if (mMessage.message == WM_QUIT) {
+				application.GetEventManager().ExecuteEvent(quitEventContext);
+			}
+			TranslateMessage(&mMessage);
+			DispatchMessage(&mMessage);
+		}
+
+		if (mMessage.message == WM_QUIT) {
+			application.GetEventManager().ExecuteEvent(quitEventContext);
+		}
+    }
+
+    void WindowsWindow::Close() {
+        DestroyWindow(mHWND);
     }
     
     void WindowsWindow::Shutdown() {
-        CORE_LOG_TRACE("Shutdown WindowsWindow");
+        CORE_LOG_INFO("Shutdown WindowsWindow");
     }
 }

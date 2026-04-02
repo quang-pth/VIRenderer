@@ -16,6 +16,8 @@ namespace VIEngine {
     public:
         virtual ~Window() = default;
         virtual bool Init() = 0;
+        virtual void Update() = 0;
+        virtual void Close() = 0;
         virtual void Shutdown() = 0;
         VI_FORCE_INLINE const WindowConfiguration& GetWindowConfiguration() const { return mConfiguration; }
         VI_FORCE_INLINE uint16_t GetWidth() const { return mConfiguration.Width; }
