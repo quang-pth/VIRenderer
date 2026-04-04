@@ -3,7 +3,7 @@
 #include"Core/pch.h"
 
 namespace VIEngine {
-	enum class EKeyState : uint8_t {
+	enum class EInputState : uint8_t {
 		None,
 		Pressed,
 		Held,

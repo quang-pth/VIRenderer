@@ -5,7 +5,7 @@
 
 namespace VIEngine {
     EKeyCode WindowsToEngineKeyCode(WPARAM wparam);
-    WPARAM EngineToWindowsKeyCode(EKeyCode keyCode);
+    uint8_t EngineToWindowsKeyCode(EKeyCode keyCode);
     EMouseButton WindowsToEngineMouseButton(WPARAM wparam);
-    WPARAM EngineToWindowsMouseButton(EMouseButton mouseButton);
+    uint8_t EngineToWindowsMouseButton(EMouseButton mouseButton);
 }

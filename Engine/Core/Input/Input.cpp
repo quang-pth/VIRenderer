@@ -25,5 +25,7 @@ namespace VIEngine {
     void Input::Update() {
         memcpy(mPreviousStates, mCurrentStates, sizeof(mCurrentStates));
         memset(mCurrentStates, 0, sizeof(mCurrentStates));
+        UpdateKeyboardStates();
+        UpdateMouseStates();
     }
 }

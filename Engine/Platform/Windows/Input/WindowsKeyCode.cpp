@@ -142,7 +142,7 @@ namespace VIEngine {
         return EKeyCode::NONE;
     }
 
-    WPARAM EngineToWindowsKeyCode(EKeyCode keyCode) 
+    uint8_t EngineToWindowsKeyCode(EKeyCode keyCode) 
     {
         switch (keyCode) {
             // Numbers
@@ -298,16 +298,17 @@ namespace VIEngine {
         return EMouseButton::NONE;
     }
 
-    WPARAM EngineToWindowsMouseButton(EMouseButton mouseButton) {
+    uint8_t EngineToWindowsMouseButton(EMouseButton mouseButton) {
         switch (mouseButton)
         {
-            case EMouseButton::BUTTON_LEFT:        return MK_LBUTTON;
-            case EMouseButton::BUTTON_RIGHT:       return MK_RBUTTON;
-            case EMouseButton::BUTTON_MIDDLE:      return MK_MBUTTON;
-            case EMouseButton::BUTTON_BACK:        return XBUTTON1;
+            case EMouseButton::BUTTON_LEFT:        return VK_LBUTTON;
+            case EMouseButton::BUTTON_RIGHT:       return VK_RBUTTON;
+            case EMouseButton::BUTTON_MIDDLE:      return VK_MBUTTON;
+            case EMouseButton::BUTTON_BACK:        return VK_XBUTTON1;
+            case EMouseButton::BUTTON_FORWARD:     return VK_XBUTTON2;
         }
 
         CORE_LOG_WARN("Invalid engine mouse button {0}, return oxff", static_cast<uint8_t>(mouseButton));
-        return 0xff;
+        return 0xf;
     }
 }
