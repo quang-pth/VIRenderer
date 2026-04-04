@@ -1,9 +1,12 @@
 #include"Platform/Windows/Window/WindowsWindow.h"
-#include"Core/Logger/Logger.h"
 #include"Platform/Windows/Input/WindowsKeyCode.h"
+#include"Core/Logger/Logger.h"
 #include<windowsx.h>
 
 namespace VIEngine {
+    uint8_t mPreviousPressedState[256];
+    uint8_t mCurrentPressedState[256];
+
     Window* Window::Create(uint16_t width, uint16_t height, const std::string& title) {
         return new WindowsWindow(width, height, title);
     }
@@ -164,7 +167,8 @@ namespace VIEngine {
     WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
         Window(windowConfig), mHWND(), mMessage()  
     {
-
+        memset(mPreviousPressedState, 0, sizeof(mPreviousPressedState));
+        memset(mCurrentPressedState, 0, sizeof(mCurrentPressedState));
     }
 
     bool WindowsWindow::Init() {

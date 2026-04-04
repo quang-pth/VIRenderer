@@ -8,6 +8,7 @@ namespace VIEngine {
 		Layer() = default; 
         virtual ~Layer() = default;
 		virtual void OnAttach() {}
+		virtual void OnUpdate() {}
 		virtual void OnDetach() {}
 	};
 

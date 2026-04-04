@@ -3,6 +3,7 @@
 #include"Core/Window/Window.h"
 #include"Core/Time/Timer.h"
 #include"Core/Event/EventManager.h"
+#include"Core/Layer/LayerStack.h"
 
 namespace VIEngine {
     struct VI_API ApplicationConfiguration {
@@ -29,6 +30,8 @@ namespace VIEngine {
     protected:
         Application() = default;
         Application(const ApplicationConfiguration&);
+        void PushLayer(Layer* layer, bool overlay = false);
+        void PopLayer(Layer* layer, bool overlay = false);
     private:
         bool OnKeyPressed(const EventContext& eventContext);
         bool OnKeyReleased(const EventContext& eventContext);
@@ -44,6 +47,7 @@ namespace VIEngine {
         size_t mFrameCount;
         Timer mTimer;
         EventManager mEventManager;
+        LayerStack mLayerStack;
     };
 
     extern Application* CreateApplication();

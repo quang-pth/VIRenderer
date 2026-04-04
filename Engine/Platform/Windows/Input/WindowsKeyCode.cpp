@@ -1,5 +1,6 @@
 #include"Platform/Windows/Input/WindowsKeyCode.h"
 #include"Core/pch.h"
+#include"Core/Logger/Logger.h"
 
 namespace VIEngine {
     EKeyCode WindowsToEngineKeyCode(WPARAM wparam) 
@@ -136,6 +137,146 @@ namespace VIEngine {
 
             default:            return EKeyCode::NONE;
         }
+
+        CORE_LOG_WARN("Invalid windows key {0}, return EKeyCode::NONE", wparam);
+        return EKeyCode::NONE;
+    }
+
+    WPARAM EngineToWindowsKeyCode(EKeyCode keyCode) 
+    {
+        switch (keyCode) {
+            // Numbers
+            case EKeyCode::NUM_0:                       return '0';
+            case EKeyCode::NUM_1:                       return '1';
+            case EKeyCode::NUM_2:                       return '2';
+            case EKeyCode::NUM_3:                       return '3';
+            case EKeyCode::NUM_4:                       return '4';
+            case EKeyCode::NUM_5:                       return '5';
+            case EKeyCode::NUM_6:                       return '6';
+            case EKeyCode::NUM_7:                       return '7';
+            case EKeyCode::NUM_8:                       return '8';
+            case EKeyCode::NUM_9:                       return '9';
+
+            // Letters
+            case EKeyCode::A:                           return 'A';
+            case EKeyCode::B:                           return 'B';
+            case EKeyCode::C:                           return 'C';
+            case EKeyCode::D:                           return 'D';
+            case EKeyCode::E:                           return 'E';
+            case EKeyCode::F:                           return 'F';
+            case EKeyCode::G:                           return 'G';
+            case EKeyCode::H:                           return 'H';
+            case EKeyCode::I:                           return 'I';
+            case EKeyCode::J:                           return 'J';
+            case EKeyCode::K:                           return 'K';
+            case EKeyCode::L:                           return 'L';
+            case EKeyCode::M:                           return 'M';
+            case EKeyCode::N:                           return 'N';
+            case EKeyCode::O:                           return 'O';
+            case EKeyCode::P:                           return 'P';
+            case EKeyCode::Q:                           return 'Q';
+            case EKeyCode::R:                           return 'R';
+            case EKeyCode::S:                           return 'S';
+            case EKeyCode::T:                           return 'T';
+            case EKeyCode::U:                           return 'U';
+            case EKeyCode::V:                           return 'V';
+            case EKeyCode::W:                           return 'W';
+            case EKeyCode::X:                           return 'X';
+            case EKeyCode::Y:                           return 'Y';
+            case EKeyCode::Z:                           return 'Z';
+
+            // Controls & Special
+            case EKeyCode::SPACE:                       return VK_SPACE;
+            case EKeyCode::APOSTROPHE:                  return VK_OEM_7;
+            case EKeyCode::COMMA:                       return VK_OEM_COMMA;
+            case EKeyCode::MINUS:                       return VK_OEM_MINUS;
+            case EKeyCode::PERIOD:                      return VK_OEM_PERIOD;
+            case EKeyCode::SLASH:                       return VK_OEM_2;
+            case EKeyCode::SEMICOLON:                   return VK_OEM_1;
+            case EKeyCode::EQUAL:                       return VK_OEM_PLUS;
+            case EKeyCode::LEFT_BRACKET:                return VK_OEM_4;
+            case EKeyCode::BACKSLASH:                   return VK_OEM_5;
+            case EKeyCode::RIGHT_BRACKET:               return VK_OEM_6;
+            case EKeyCode::GRAVE_ACCENT:                return VK_OEM_3;
+
+            // System Keys
+            case EKeyCode::ESCAPE:                      return VK_ESCAPE;
+            case EKeyCode::ENTER:                       return VK_RETURN;
+            case EKeyCode::TAB:                         return VK_TAB;
+            case EKeyCode::BACKSPACE:                   return VK_BACK;
+            case EKeyCode::INSERT:                      return VK_INSERT;
+            case EKeyCode::DEL:                         return VK_DELETE;
+            case EKeyCode::RIGHT:                       return VK_RIGHT;
+            case EKeyCode::LEFT:                        return VK_LEFT;
+            case EKeyCode::DOWN:                        return VK_DOWN;
+            case EKeyCode::UP:                          return VK_UP;
+            case EKeyCode::PAGE_UP:                     return VK_PRIOR;
+            case EKeyCode::PAGE_DOWN:                   return VK_NEXT;
+            case EKeyCode::HOME:                        return VK_HOME;
+            case EKeyCode::END:                         return VK_END;
+            case EKeyCode::CAPS_LOCK:                   return VK_CAPITAL;
+            case EKeyCode::SCROLL_LOCK:                 return VK_SCROLL;
+            case EKeyCode::NUM_LOCK:                    return VK_NUMLOCK;
+            case EKeyCode::PRINT_SCREEN:                return VK_SNAPSHOT;
+            case EKeyCode::PAUSE:                       return VK_PAUSE;
+
+            // Function Keys
+            case EKeyCode::F1:                          return VK_F1;
+            case EKeyCode::F2:                          return VK_F2;
+            case EKeyCode::F3:                          return VK_F3;
+            case EKeyCode::F4:                          return VK_F4;
+            case EKeyCode::F5:                          return VK_F5;
+            case EKeyCode::F6:                          return VK_F6;
+            case EKeyCode::F7:                          return VK_F7;
+            case EKeyCode::F8:                          return VK_F8;
+            case EKeyCode::F9:                          return VK_F9;
+            case EKeyCode::F10:                         return VK_F10;
+            case EKeyCode::F11:                         return VK_F11;
+            case EKeyCode::F12:                         return VK_F12;
+            case EKeyCode::F13:                         return VK_F13;
+            case EKeyCode::F14:                         return VK_F14;
+            case EKeyCode::F15:                         return VK_F15;
+            case EKeyCode::F16:                         return VK_F16;
+            case EKeyCode::F17:                         return VK_F17;
+            case EKeyCode::F18:                         return VK_F18;
+            case EKeyCode::F19:                         return VK_F19;
+            case EKeyCode::F20:                         return VK_F20;
+            case EKeyCode::F21:                         return VK_F21;
+            case EKeyCode::F22:                         return VK_F22;
+            case EKeyCode::F23:                         return VK_F23;
+            case EKeyCode::F24:                         return VK_F24;
+
+            // Keypad
+            case EKeyCode::KP_0:                        return VK_NUMPAD0;
+            case EKeyCode::KP_1:                        return VK_NUMPAD1;
+            case EKeyCode::KP_2:                        return VK_NUMPAD2;
+            case EKeyCode::KP_3:                        return VK_NUMPAD3;
+            case EKeyCode::KP_4:                        return VK_NUMPAD4;
+            case EKeyCode::KP_5:                        return VK_NUMPAD5;
+            case EKeyCode::KP_6:                        return VK_NUMPAD6;
+            case EKeyCode::KP_7:                        return VK_NUMPAD7;
+            case EKeyCode::KP_8:                        return VK_NUMPAD8;
+            case EKeyCode::KP_9:                        return VK_NUMPAD9;
+            case EKeyCode::KP_DECIMAL:                  return VK_DECIMAL;
+            case EKeyCode::KP_DIVIDE:                   return VK_DIVIDE;
+            case EKeyCode::KP_MULTIPLY:                 return VK_MULTIPLY;
+            case EKeyCode::KP_SUBTRACT:                 return VK_SUBTRACT;
+            case EKeyCode::KP_ADD:                      return VK_ADD;
+
+            // Modifiers
+            case EKeyCode::LEFT_SHIFT:                  return VK_LSHIFT;  
+            case EKeyCode::LEFT_CONTROL:                return VK_LCONTROL;
+            case EKeyCode::LEFT_ALT:                    return VK_LMENU;  
+            case EKeyCode::LEFT_SUPER:                  return VK_LWIN;    
+            case EKeyCode::RIGHT_SHIFT:                 return VK_RSHIFT;  
+            case EKeyCode::RIGHT_CONTROL:               return VK_RCONTROL;
+            case EKeyCode::RIGHT_ALT:                   return VK_RMENU;   
+            case EKeyCode::RIGHT_SUPER:                 return VK_RWIN;    
+            case EKeyCode::MENU:                        return VK_APPS;    
+        }
+        
+        CORE_LOG_WARN("Invalid engine key {0}, return oxff", static_cast<uint16_t>(keyCode));
+        return 0xff;
     }
 
     EMouseButton WindowsToEngineMouseButton(WPARAM wparam) {
@@ -152,6 +293,21 @@ namespace VIEngine {
             case XBUTTON1:          return EMouseButton::BUTTON_BACK;
             case XBUTTON2:          return EMouseButton::BUTTON_FORWARD;
         }
+
+        CORE_LOG_WARN("Invalid windows mouse button {0}, return EMouseButton::NONE", wparam);
         return EMouseButton::NONE;
+    }
+
+    WPARAM EngineToWindowsMouseButton(EMouseButton mouseButton) {
+        switch (mouseButton)
+        {
+            case EMouseButton::BUTTON_LEFT:        return MK_LBUTTON;
+            case EMouseButton::BUTTON_RIGHT:       return MK_RBUTTON;
+            case EMouseButton::BUTTON_MIDDLE:      return MK_MBUTTON;
+            case EMouseButton::BUTTON_BACK:        return XBUTTON1;
+        }
+
+        CORE_LOG_WARN("Invalid engine mouse button {0}, return oxff", static_cast<uint8_t>(mouseButton));
+        return 0xff;
     }
 }

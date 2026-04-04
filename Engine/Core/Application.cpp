@@ -1,5 +1,6 @@
 #include"Application.h"
 #include"Core/Logger/Logger.h"
+#include"Core/Input/Input.h"
 
 namespace VIEngine {
     Application* Application::sInstance = nullptr;
@@ -9,7 +10,7 @@ namespace VIEngine {
     }
 
     Application::Application(const ApplicationConfiguration& appConfig) : mAppConfig(appConfig), mIsRunning(true), 
-        mFrameCount(0), mTimer(), mEventManager() 
+        mFrameCount(0), mTimer(), mEventManager(), mLayerStack()
     {
         sInstance = this;
     }
@@ -40,10 +41,16 @@ namespace VIEngine {
         CORE_LOG_INFO("Run appplication");
 
         OnInitClient();
-        
+
+        Input* input = Input::Get();
         while(mIsRunning) {
             ++mFrameCount;
             mWindow->Update();
+            input->Update();
+
+            for (auto iter = mLayerStack.begin(); iter != mLayerStack.end(); ++iter) {
+                (*iter)->OnUpdate();
+            }
 
             mEventManager.ProcessEvents();
         }
@@ -56,14 +63,29 @@ namespace VIEngine {
         CORE_LOG_INFO("Shutdown appplication");
     }
 
-    bool Application::OnWindowQuit(const EventContext& eventContext) {
-        mIsRunning = false;
-        return false;
+    void Application::PushLayer(Layer* layer, bool overlay) {
+        layer->OnAttach();
+        if (overlay) {
+            mLayerStack.PushOverlay(layer);
+        }
+        else {
+            mLayerStack.Push(layer);
+        }
+    }
+
+    void Application::PopLayer(Layer* layer, bool overlay) {
+        layer->OnDetach();
+        if (overlay) {
+            mLayerStack.PopOverlay(layer);
+        }
+        else {
+            mLayerStack.Pop(layer);
+        }
     }
 
     bool Application::OnKeyPressed(const EventContext& eventContext) {
         EKeyCode keyCode = std::get<EKeyCode>(eventContext.GetParamList()[0]);
-        CORE_LOG_TRACE("Key {0} is pressed at frame {1}", (int)keyCode, eventContext.GetFrameTime());
+        // CORE_LOG_TRACE("Key {0} is pressed at frame {1}", (int)keyCode, eventContext.GetFrameTime());
         if (keyCode == EKeyCode::ESCAPE) {
             mIsRunning = false;
             mWindow->Close();
@@ -74,32 +96,37 @@ namespace VIEngine {
 
     bool Application::OnKeyReleased(const EventContext& eventContext) {
         EKeyCode keyCode = std::get<EKeyCode>(eventContext.GetParamList()[0]);
-        CORE_LOG_TRACE("Key {0} is released at frame {1}", (int)keyCode, eventContext.GetFrameTime());
+        // CORE_LOG_TRACE("Key {0} is released at frame {1}", (int)keyCode, eventContext.GetFrameTime());
         return true;
     }
 
     bool Application::OnMousePressed(const EventContext& eventContext) {
         EMouseButton mouseButton = std::get<EMouseButton>(eventContext.GetParamList()[0]);
-        CORE_LOG_TRACE("Mouse {0} is pressed at frame {1}", (int)mouseButton, eventContext.GetFrameTime());
+        // CORE_LOG_TRACE("Mouse {0} is pressed at frame {1}", (int)mouseButton, eventContext.GetFrameTime());
         return false;
     }
 
     bool Application::OnMouseReleased(const EventContext& eventContext) {
         EMouseButton mouseButton = std::get<EMouseButton>(eventContext.GetParamList()[0]);
-        CORE_LOG_TRACE("Mouse {0} is released at frame {1}", (int)mouseButton, eventContext.GetFrameTime());
+        // CORE_LOG_TRACE("Mouse {0} is released at frame {1}", (int)mouseButton, eventContext.GetFrameTime());
         return false;
     }
 
     bool Application::OnMouseMoved(const EventContext& eventContext) {
         int16_t xPos = std::get<int>(eventContext.GetParamList()[0]);
         int16_t yPos = std::get<int>(eventContext.GetParamList()[1]);
-        CORE_LOG_TRACE("Mouse position: (x: {0}, y: {1})", xPos, yPos);
+        // CORE_LOG_TRACE("Mouse position: (x: {0}, y: {1})", xPos, yPos);
         return false;
     }
 
     bool Application::OnMouseWheel(const EventContext& eventContext) {
         int direction = std::get<int>(eventContext.GetParamList()[0]);
-        CORE_LOG_TRACE("Mouse wheel: {0}", direction);
+        // CORE_LOG_TRACE("Mouse wheel: {0}", direction);
+        return false;
+    }
+
+    bool Application::OnWindowQuit(const EventContext& eventContext) {
+        mIsRunning = false;
         return false;
     }
 }
