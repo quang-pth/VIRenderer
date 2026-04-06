@@ -29,7 +29,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Vendor/spdlog/include
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC d3d12 d3dcompiler dxgi DirectXTex spdlog)
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC d3d12 d3dcompiler dxgi DirectXTex spdlog Xinput)
+endif()
 
 file(GLOB_RECURSE VERTEX_SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/*.vs.hlsl CMAKE_CONFIGURE_DEPENDS)
 set(VS_HLSL_ENTRY_POINT "BasicVS")

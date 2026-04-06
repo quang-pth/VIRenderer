@@ -4,10 +4,10 @@
 
 namespace VIEngine {
 	enum class EInputState : uint8_t {
-		None,
-		Pressed,
-		Held,
-		Released
+		NONE,
+		PRESSED,
+		HELD,
+		RELEASED
 	};
 
 	enum class EKeyCode : uint16_t {
@@ -135,7 +135,7 @@ namespace VIEngine {
 		LAST               = MENU
 	};
 
-	enum class EMouseButton {
+	enum class EMouseButton : uint8_t {
 		BUTTON_1         = 0,
 		BUTTON_2         = 1,
 		BUTTON_3         = 2,
@@ -147,6 +147,26 @@ namespace VIEngine {
 		BUTTON_BACK    	 = BUTTON_4,
 		BUTTON_FORWARD   = BUTTON_5,
 		NONE
+	};
+
+	enum class EGamepad : uint8_t {
+		NONE = 0,
+		BUTTON_A,
+		BUTTON_B,
+		BUTTON_X,
+		BUTTON_Y,
+		BUTTON_LB,
+		BUTTON_RB,
+		BUTTON_LT,
+		BUTTON_RT,
+		BUTTON_UP,
+		BUTTON_DOWN,
+		BUTTON_LEFT,
+		BUTTON_RIGHT,
+		BUTTON_MENU,
+		BUTTON_VIEW,
+		LEFT_THUMBSTICK,
+		RIGHT_THUMBSTICK
 	};
 
 	enum class EKeyModifier : uint8_t {

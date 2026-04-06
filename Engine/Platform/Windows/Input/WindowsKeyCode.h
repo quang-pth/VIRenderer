@@ -8,4 +8,6 @@ namespace VIEngine {
     uint8_t EngineToWindowsKeyCode(EKeyCode keyCode);
     EMouseButton WindowsToEngineMouseButton(WPARAM wparam);
     uint8_t EngineToWindowsMouseButton(EMouseButton mouseButton);
+    EGamepad WindowsToEngineGamepad(uint16_t button);
+    uint16_t EngineToWindowsGamepad(EGamepad gamepad);
 }

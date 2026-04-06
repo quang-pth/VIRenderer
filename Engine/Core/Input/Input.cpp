@@ -27,5 +27,6 @@ namespace VIEngine {
         memset(mCurrentStates, 0, sizeof(mCurrentStates));
         UpdateKeyboardStates();
         UpdateMouseStates();
+        UpdateGamepadStates();
     }
 }

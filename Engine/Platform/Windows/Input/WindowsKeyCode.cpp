@@ -1,6 +1,7 @@
 #include"Platform/Windows/Input/WindowsKeyCode.h"
 #include"Core/pch.h"
 #include"Core/Logger/Logger.h"
+#include<Xinput.h>
 
 namespace VIEngine {
     EKeyCode WindowsToEngineKeyCode(WPARAM wparam) 
@@ -276,7 +277,7 @@ namespace VIEngine {
         }
         
         CORE_LOG_WARN("Invalid engine key {0}, return oxff", static_cast<uint16_t>(keyCode));
-        return 0xff;
+        return 0x00;
     }
 
     EMouseButton WindowsToEngineMouseButton(WPARAM wparam) {
@@ -309,6 +310,49 @@ namespace VIEngine {
         }
 
         CORE_LOG_WARN("Invalid engine mouse button {0}, return oxff", static_cast<uint8_t>(mouseButton));
-        return 0xf;
+        return 0x00;
+    }
+
+    EGamepad WindowsToEngineGamepad(uint16_t button) {
+        if (button == XINPUT_GAMEPAD_A)                     return EGamepad::BUTTON_A;
+        if (button == XINPUT_GAMEPAD_B)                     return EGamepad::BUTTON_B;
+        if (button == XINPUT_GAMEPAD_X)                     return EGamepad::BUTTON_X;
+        if (button == XINPUT_GAMEPAD_Y)                     return EGamepad::BUTTON_Y;
+        if (button == XINPUT_GAMEPAD_LEFT_SHOULDER)         return EGamepad::BUTTON_LB;
+        if (button == XINPUT_GAMEPAD_RIGHT_SHOULDER)        return EGamepad::BUTTON_RB;
+        if (button == XINPUT_GAMEPAD_DPAD_UP)               return EGamepad::BUTTON_UP;
+        if (button == XINPUT_GAMEPAD_DPAD_DOWN)             return EGamepad::BUTTON_DOWN;
+        if (button == XINPUT_GAMEPAD_DPAD_RIGHT)            return EGamepad::BUTTON_RIGHT;
+        if (button == XINPUT_GAMEPAD_DPAD_LEFT)             return EGamepad::BUTTON_LEFT;
+        if (button == XINPUT_GAMEPAD_START)                 return EGamepad::BUTTON_MENU;
+        if (button == XINPUT_GAMEPAD_BACK)                  return EGamepad::BUTTON_VIEW;
+        if (button == XINPUT_GAMEPAD_LEFT_THUMB)            return EGamepad::LEFT_THUMBSTICK;
+        if (button == XINPUT_GAMEPAD_RIGHT_THUMB)           return EGamepad::RIGHT_THUMBSTICK;
+
+        CORE_LOG_WARN("Invalid windows gamepad button {0}, return EGamepad::NONE", button);
+        return EGamepad::NONE;
+    }
+
+    uint16_t EngineToWindowsGamepad(EGamepad gamepad) {
+        switch (gamepad)
+        {
+            case EGamepad::BUTTON_A:             return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_B:             return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_X:             return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_Y:             return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_LB:            return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_RB:            return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_UP:            return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_DOWN:          return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_RIGHT:         return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_LEFT:          return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_MENU:          return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_VIEW:          return XINPUT_GAMEPAD_A;
+            case EGamepad::LEFT_THUMBSTICK:      return XINPUT_GAMEPAD_A;
+            case EGamepad::RIGHT_THUMBSTICK:     return XINPUT_GAMEPAD_A;
+        }
+
+        CORE_LOG_WARN("Invalid engine gamepad button {0}, return 0xffff", static_cast<uint8_t>(gamepad));
+        return 0x0000;
     }
 }
