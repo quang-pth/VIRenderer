@@ -337,19 +337,19 @@ namespace VIEngine {
         switch (gamepad)
         {
             case EGamepad::BUTTON_A:             return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_B:             return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_X:             return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_Y:             return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_LB:            return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_RB:            return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_UP:            return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_DOWN:          return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_RIGHT:         return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_LEFT:          return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_MENU:          return XINPUT_GAMEPAD_A;
-            case EGamepad::BUTTON_VIEW:          return XINPUT_GAMEPAD_A;
-            case EGamepad::LEFT_THUMBSTICK:      return XINPUT_GAMEPAD_A;
-            case EGamepad::RIGHT_THUMBSTICK:     return XINPUT_GAMEPAD_A;
+            case EGamepad::BUTTON_B:             return XINPUT_GAMEPAD_B;
+            case EGamepad::BUTTON_X:             return XINPUT_GAMEPAD_X;
+            case EGamepad::BUTTON_Y:             return XINPUT_GAMEPAD_Y;
+            case EGamepad::BUTTON_LB:            return XINPUT_GAMEPAD_LEFT_SHOULDER;
+            case EGamepad::BUTTON_RB:            return XINPUT_GAMEPAD_RIGHT_SHOULDER;
+            case EGamepad::BUTTON_UP:            return XINPUT_GAMEPAD_DPAD_UP;
+            case EGamepad::BUTTON_DOWN:          return XINPUT_GAMEPAD_DPAD_DOWN;
+            case EGamepad::BUTTON_RIGHT:         return XINPUT_GAMEPAD_DPAD_RIGHT;
+            case EGamepad::BUTTON_LEFT:          return XINPUT_GAMEPAD_DPAD_LEFT;
+            case EGamepad::BUTTON_MENU:          return XINPUT_GAMEPAD_START;
+            case EGamepad::BUTTON_VIEW:          return XINPUT_GAMEPAD_BACK;
+            case EGamepad::LEFT_THUMBSTICK:      return XINPUT_GAMEPAD_LEFT_THUMB;
+            case EGamepad::RIGHT_THUMBSTICK:     return XINPUT_GAMEPAD_RIGHT_THUMB;
         }
 
         CORE_LOG_WARN("Invalid engine gamepad button {0}, return 0xffff", static_cast<uint8_t>(gamepad));

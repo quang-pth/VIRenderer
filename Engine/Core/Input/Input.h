@@ -27,7 +27,7 @@ namespace VIEngine {
             LT、RT、スティックのボタンは常に0を返す。
             これらの入力はGetLeftTriggerValueやGetRightTriggerValueやGetHorizontalAxisValueやGetVerticalAxisValueで取得する必要がある。
         */
-        static uint8_t GetValue(uint8_t index, EGamepad gamepad) { return sInstance->GetValueImpl(index, gamepad); }
+        static uint8_t GetValue(EGamepad gamepad, uint8_t index = 0) { return sInstance->GetValueImpl(gamepad, index); }
         // コントローラーの左トリガーの値を取得するメソッド。値は0.0fから1.0fの範囲で、0.0fは非押下、1.0fは完全に押下を表す。
         static float GetLeftTriggerValue(uint8_t index = 0) { return sInstance->GetLeftTriggerValueImpl(index); }
         // コントローラーの右トリガーの値を取得するメソッド。値は0.0fから1.0fの範囲で、0.0fは非押下、1.0fは完全に押下を表す。
@@ -40,10 +40,10 @@ namespace VIEngine {
         static float GetLeftThumbStickYValue(uint8_t index = 0) { return sInstance->GetLeftThumbStickYValueImpl(index); }
         // コントローラーの右スティックの縦軸の値を取得するメソッド。値は-1.0fから1.0fの範囲で、-1.0fは完全に下、1.0fは完全に上を表す。
         static float GetRightThumbStickYValue(uint8_t index = 0) { return sInstance->GetRightThumbStickYValueImpl(index); }
-        static VI_FORCE_INLINE bool IsPressed(uint8_t index, EGamepad gamepad) { return sInstance->IsPressedImpl(index, gamepad); }
-        static VI_FORCE_INLINE bool IsHeld(uint8_t index, EGamepad gamepad) { return sInstance->IsHeldImpl(index, gamepad); }
-        static VI_FORCE_INLINE bool IsReleased(uint8_t index, EGamepad gamepad) { return sInstance->IsReleasedImpl(index, gamepad); }
-        static VI_FORCE_INLINE EInputState GetState(uint8_t index, EGamepad gamepad) { return sInstance->GetStateImpl(index, gamepad); }
+        static VI_FORCE_INLINE bool IsPressed(EGamepad gamepad, uint8_t index = 0) { return sInstance->IsPressedImpl(gamepad, index); }
+        static VI_FORCE_INLINE bool IsHeld(EGamepad gamepad, uint8_t index = 0) { return sInstance->IsHeldImpl(gamepad, index); }
+        static VI_FORCE_INLINE bool IsReleased(EGamepad gamepad, uint8_t index = 0) { return sInstance->IsReleasedImpl(gamepad, index); }
+        static VI_FORCE_INLINE EInputState GetState(EGamepad gamepad, uint8_t index = 0) { return sInstance->GetStateImpl(gamepad, index); }
     private:
         static Input* Create();
     private:
@@ -66,17 +66,17 @@ namespace VIEngine {
         virtual bool IsReleasedImpl(EMouseButton keyCode) = 0;
         virtual EInputState GetStateImpl(EMouseButton keyCode) = 0;
         // コントローラー取得用メソッド
-        virtual uint8_t GetValueImpl(uint8_t index, EGamepad gamepad) = 0;
+        virtual uint8_t GetValueImpl(EGamepad gamepad, uint8_t index) = 0;
         virtual float GetLeftTriggerValueImpl(uint8_t index) = 0;
         virtual float GetRightTriggerValueImpl(uint8_t index) = 0;
         virtual float GetLeftThumbStickXValueImpl(uint8_t index) = 0;
         virtual float GetRightThumbStickXValueImpl(uint8_t index) = 0;
         virtual float GetLeftThumbStickYValueImpl(uint8_t index) = 0;
         virtual float GetRightThumbStickYValueImpl(uint8_t index) = 0;
-        virtual bool IsPressedImpl(uint8_t index, EGamepad gamepad) = 0;
-        virtual bool IsHeldImpl(uint8_t index, EGamepad gamepad) = 0;
-        virtual bool IsReleasedImpl(uint8_t index, EGamepad gamepad) = 0;
-        virtual EInputState GetStateImpl(uint8_t index, EGamepad gamepad) = 0;
+        virtual bool IsPressedImpl(EGamepad gamepad, uint8_t index) = 0;
+        virtual bool IsHeldImpl(EGamepad gamepad, uint8_t index) = 0;
+        virtual bool IsReleasedImpl(EGamepad gamepad, uint8_t index) = 0;
+        virtual EInputState GetStateImpl(EGamepad gamepad, uint8_t index) = 0;
     protected:
         Input();
         virtual void UpdateKeyboardStates() = 0;

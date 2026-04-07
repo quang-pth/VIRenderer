@@ -26,22 +26,23 @@ namespace VIEngine {
         virtual bool IsReleasedImpl(EMouseButton keyCode) override;
         virtual EInputState GetStateImpl(EMouseButton keyCode) override;
         // コントローラー取得用メソッド
-        virtual uint8_t GetValueImpl(uint8_t index, EGamepad gamepad) override;
+        virtual uint8_t GetValueImpl(EGamepad gamepad, uint8_t index) override;
         virtual float GetLeftTriggerValueImpl(uint8_t index) override;
         virtual float GetRightTriggerValueImpl(uint8_t index) override;
         virtual float GetLeftThumbStickXValueImpl(uint8_t index) override;
         virtual float GetRightThumbStickXValueImpl(uint8_t index) override;
         virtual float GetLeftThumbStickYValueImpl(uint8_t index) override;
         virtual float GetRightThumbStickYValueImpl(uint8_t index) override;
-        virtual bool IsPressedImpl(uint8_t index, EGamepad gamepad) override;
-        virtual bool IsHeldImpl(uint8_t index, EGamepad gamepad) override;
-        virtual bool IsReleasedImpl(uint8_t index, EGamepad gamepad) override;
-        virtual EInputState GetStateImpl(uint8_t index, EGamepad gamepad) override;
+        virtual bool IsPressedImpl(EGamepad gamepad, uint8_t index) override;
+        virtual bool IsHeldImpl(EGamepad gamepad, uint8_t index) override;
+        virtual bool IsReleasedImpl(EGamepad gamepad, uint8_t index) override;
+        virtual EInputState GetStateImpl(EGamepad gamepad, uint8_t index) override;
     protected:
         virtual void UpdateKeyboardStates() override;
         virtual void UpdateMouseStates() override;
         virtual void UpdateGamepadStates() override;
-        float Normalize(float value, float range);
+        template<typename T, typename R>
+        VI_FORCE_INLINE float Normalize(T value, R range) { return value / static_cast<float>(range); }
     private:
         std::unordered_map<EMouseButton, uint8_t> mMouseButtonMap;
         XINPUT_STATE mPreviousGamepadStates[XUSER_MAX_COUNT];

@@ -21,7 +21,7 @@ namespace VIEngine {
     }
 
     uint8_t WindowsInput::GetValueImpl(EKeyCode keyCode) {
-        return IsPressedImpl(keyCode) || IsHeldImpl(keyCode);
+        return IsPressed(keyCode) || IsHeld(keyCode);
     }
 
     bool WindowsInput::IsPressedImpl(EKeyCode keyCode) {
@@ -40,15 +40,14 @@ namespace VIEngine {
     }
 
     EInputState WindowsInput::GetStateImpl(EKeyCode keyCode) {
-        if (IsPressedImpl(keyCode))         return EInputState::PRESSED;
-        if (IsHeldImpl(keyCode))            return EInputState::HELD;
-        if (IsHeldImpl(keyCode))            return EInputState::RELEASED;
-        CORE_LOG_WARN("Invalid engine key {0}, return EKeyState::None", static_cast<uint16_t>(keyCode));
+        if (IsPressed(keyCode))         return EInputState::PRESSED;
+        if (IsHeld(keyCode))            return EInputState::HELD;
+        if (IsReleased(keyCode))        return EInputState::RELEASED;
         return EInputState::NONE;
     }
 
     uint8_t WindowsInput::GetValueImpl(EMouseButton mouseButton) {
-        return IsPressedImpl(mouseButton) || IsHeldImpl(mouseButton);
+        return IsPressed(mouseButton) || IsHeld(mouseButton);
     }
 
     bool WindowsInput::IsPressedImpl(EMouseButton mouseButton) {
@@ -67,14 +66,13 @@ namespace VIEngine {
     }
 
     EInputState WindowsInput::GetStateImpl(EMouseButton mouseButton) {
-        if (IsPressedImpl(mouseButton))     return EInputState::PRESSED;
-        if (IsHeldImpl(mouseButton))        return EInputState::HELD;
-        if (IsHeldImpl(mouseButton))        return EInputState::RELEASED;
-        CORE_LOG_WARN("Invalid mouse button {0}, return EKeyState::None", static_cast<uint16_t>(mouseButton));
+        if (IsPressed(mouseButton))         return EInputState::PRESSED;
+        if (IsHeld(mouseButton))            return EInputState::HELD;
+        if (IsReleased(mouseButton))        return EInputState::RELEASED;
         return EInputState::NONE;
     }
 
-    uint8_t WindowsInput::GetValueImpl(uint8_t index, EGamepad gamepad) {
+    uint8_t WindowsInput::GetValueImpl(EGamepad gamepad, uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
         if 
         (
@@ -85,16 +83,13 @@ namespace VIEngine {
             return 0;
         }
 
-        return IsPressedImpl(index, gamepad) || IsHeldImpl(index, gamepad);
+        return IsPressed(gamepad, index) || IsHeld(gamepad, index);
     }
 
     float WindowsInput::GetLeftTriggerValueImpl(uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
         
-        if (
-            !IsPressedImpl(index, EGamepad::BUTTON_LT) || 
-            !IsHeldImpl(index, EGamepad::BUTTON_LT)
-        ) return 0.0f;
+        if (GetState(EGamepad::BUTTON_LT) == EInputState::NONE) return 0.0f;
 
         XINPUT_STATE* inputState = &mCurrentGamepadStates[index];
         return Normalize(inputState->Gamepad.bLeftTrigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD, TRIGGER_THRESHOLD_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
@@ -103,10 +98,7 @@ namespace VIEngine {
     float WindowsInput::GetRightTriggerValueImpl(uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
 
-        if (
-            !IsPressedImpl(index, EGamepad::BUTTON_RT) || 
-            !IsHeldImpl(index, EGamepad::BUTTON_RT) 
-        ) return 0.0f;
+        if (GetState(EGamepad::BUTTON_RT) == EInputState::NONE) return 0.0f;
 
         XINPUT_STATE* inputState = &mCurrentGamepadStates[index];
         return Normalize(inputState->Gamepad.bRightTrigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD, TRIGGER_THRESHOLD_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
@@ -119,10 +111,16 @@ namespace VIEngine {
         if (std::abs(inputState->Gamepad.sThumbLX) < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) return 0.0f;
 
         if (inputState->Gamepad.sThumbLX < 0) {
-            return Normalize(inputState->Gamepad.sThumbLX, THUMBSTICK_THRESHOLD_MIN * -1.0f);
+            return Normalize(
+                inputState->Gamepad.sThumbLX + XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 
+                THUMBSTICK_THRESHOLD_MIN * -1.0f - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
+            );
         }
 
-        return Normalize(inputState->Gamepad.sThumbLX, THUMBSTICK_THRESHOLD_MAX * 1.0f);
+        return Normalize(
+            inputState->Gamepad.sThumbLX - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 
+            THUMBSTICK_THRESHOLD_MAX * 1.0f - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
+        );
     }
 
     float WindowsInput::GetRightThumbStickXValueImpl(uint8_t index) {
@@ -132,10 +130,16 @@ namespace VIEngine {
         if (std::abs(inputState->Gamepad.sThumbRX) < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) return 0.0f;
 
         if (inputState->Gamepad.sThumbRX < 0) {
-            return Normalize(inputState->Gamepad.sThumbRX, THUMBSTICK_THRESHOLD_MIN * -1.0f);
+            return Normalize(
+                inputState->Gamepad.sThumbRX + XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+                THUMBSTICK_THRESHOLD_MIN * -1.0f - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
+            );
         }
 
-        return Normalize(inputState->Gamepad.sThumbRX, THUMBSTICK_THRESHOLD_MAX * 1.0f);
+        return Normalize(
+            inputState->Gamepad.sThumbRX - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 
+            THUMBSTICK_THRESHOLD_MAX * 1.0f - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
+        );
     }
 
     float WindowsInput::GetLeftThumbStickYValueImpl(uint8_t index) {
@@ -164,7 +168,7 @@ namespace VIEngine {
         return Normalize(inputState->Gamepad.sThumbRY, THUMBSTICK_THRESHOLD_MAX * 1.0f);
     }
 
-    bool WindowsInput::IsPressedImpl(uint8_t index, EGamepad gamepad) {
+    bool WindowsInput::IsPressedImpl(EGamepad gamepad, uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
         XINPUT_STATE* previousState = &mPreviousGamepadStates[index];
         XINPUT_STATE* currentState = &mCurrentGamepadStates[index];
@@ -187,7 +191,7 @@ namespace VIEngine {
         return !isPressedPrevious && isPressedCurrent;
     }
 
-    bool WindowsInput::IsHeldImpl(uint8_t index, EGamepad gamepad) {
+    bool WindowsInput::IsHeldImpl(EGamepad gamepad, uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
         XINPUT_STATE* previousState = &mPreviousGamepadStates[index];
         XINPUT_STATE* currentState = &mCurrentGamepadStates[index];
@@ -210,7 +214,7 @@ namespace VIEngine {
         return isPressedPrevious && isPressedCurrent;
     }
 
-    bool WindowsInput::IsReleasedImpl(uint8_t index, EGamepad gamepad) {
+    bool WindowsInput::IsReleasedImpl(EGamepad gamepad, uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
         XINPUT_STATE* previousState = &mPreviousGamepadStates[index];
         XINPUT_STATE* currentState = &mCurrentGamepadStates[index];
@@ -233,11 +237,11 @@ namespace VIEngine {
         return isPressedPrevious && !isPressedCurrent;
     }
 
-    EInputState WindowsInput::GetStateImpl(uint8_t index, EGamepad gamepad) {
+    EInputState WindowsInput::GetStateImpl(EGamepad gamepad, uint8_t index) {
         VI_ASSERT(index < XUSER_MAX_COUNT && "Invalid gamepad index, max index is 3");
-        if (IsPressedImpl(index, gamepad))      return EInputState::PRESSED;
-        if (IsHeldImpl(index, gamepad))         return EInputState::HELD;
-        if (IsReleasedImpl(index, gamepad))     return EInputState::RELEASED;
+        if (IsPressed(gamepad, index))      return EInputState::PRESSED;
+        if (IsHeld(gamepad, index))         return EInputState::HELD;
+        if (IsReleased(gamepad, index))     return EInputState::RELEASED;
         return EInputState::NONE;
     }
 
@@ -264,9 +268,5 @@ namespace VIEngine {
             memset(&mCurrentGamepadStates[index], 0, sizeof(XINPUT_STATE));
             XInputGetState(index, &mCurrentGamepadStates[index]);
         }
-    }
-
-    float WindowsInput::Normalize(float value, float range) {
-        return value / range;
     }
 }
