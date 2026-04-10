@@ -2,10 +2,19 @@
 
 #include"Core/Window/Window.h"
 #include"Core/Application.h"
+#include"Core/Type/Object/RTTI.h"
 #include<Windows.h>
 
 namespace VIEngine {
+    struct WindowsMouseState {
+        double PositionX;
+        double PositionY;
+        double OffsetX;
+        double OffsetY;
+    };
+
     class VI_API WindowsWindow : public Window {
+        DECLARE_RTTI
     public:
         WindowsWindow() = default;
         WindowsWindow(uint16_t width, uint16_t height, const std::string& title);
@@ -14,8 +23,13 @@ namespace VIEngine {
         virtual void Update() override;
         virtual void Close() override;
         virtual void Shutdown() override;
+        VI_FORCE_INLINE WindowsMouseState& GetMouseState() { return mMouseState; }
+        VI_FORCE_INLINE bool GetIsFirstMouse() const { return mIsFirstMouse; }
+        VI_FORCE_INLINE void SetIsFirstMouse(bool value) { mIsFirstMouse = value; }
     private:
         HWND mHWND;
         MSG mMessage;
+        WindowsMouseState mMouseState;
+        bool mIsFirstMouse;
     };
 }

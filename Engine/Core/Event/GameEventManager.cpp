@@ -1,22 +1,22 @@
-#include"Core/Event/EventManager.h"
+#include"Core/Event/GameEventManager.h"
 #include"Core/Logger/Logger.h"
 #include"Core/Application.h"
 
 namespace VIEngine {
-    EventManager::EventManager() : mEventQueue(), mActionMap(), mTotalListener(0) {
+    GameEventManager::GameEventManager() : mEventQueue(), mActionMap(), mTotalListener(0) {
 
     }
 
-    EventManager::~EventManager() {
+    GameEventManager::~GameEventManager() {
 
     }
 
-    void EventManager::ExecuteEvent(const EventContext& eventContext) {
+    void GameEventManager::ExecuteEvent(const EventContext& eventContext) {
         StringID eventNameID{eventContext.GetName().data()};
         if (mActionMap.count(eventNameID) > 0) {
-            const EventActionList& actionList = mActionMap[eventNameID];
-            for (const EventActionPair& eventActionPair : actionList) {
-                const EventAction& eventAction = eventActionPair.second;
+            const EventActionList<EventContext>& actionList = mActionMap[eventNameID];
+            for (const EventActionPair<EventContext>& eventActionPair : actionList) {
+                const EventAction<EventContext>& eventAction = eventActionPair.second;
                 if (!eventAction(eventContext)) {
                     break;
                 }
@@ -27,11 +27,11 @@ namespace VIEngine {
         }
     }
 
-    void EventManager::DispatchEvent(const EventContext& eventContext) {
+    void GameEventManager::DispatchEvent(const EventContext& eventContext) {
         mEventQueue.push(eventContext);
     }
 
-    void EventManager::ProcessEvents() {
+    void GameEventManager::ProcessEvents() {
         while (!mEventQueue.empty()) {
             const EventContext& eventContext = mEventQueue.top();
 
@@ -42,13 +42,13 @@ namespace VIEngine {
         }
     }
 
-    EventActionHandle EventManager::RegisterEventListener(const std::string& eventName, const EventAction& eventAction) {
+    EventActionHandle GameEventManager::RegisterEventListener(const std::string& eventName, const EventAction<EventContext>& eventAction) {
         StringID eventNameID{eventName.data()};
         mActionMap[eventNameID].emplace_back(std::make_pair(++mTotalListener, eventAction));
         return mTotalListener;
     }
 
-    void EventManager::UnregisterEventListener(const std::string& eventName, EventActionHandle actionHandle) {
+    void GameEventManager::UnregisterEventListener(const std::string& eventName, EventActionHandle actionHandle) {
         StringID eventNameID{eventName.data()};
         if (mActionMap.count(eventNameID) > 0) {
             auto& actionList = mActionMap[eventNameID];

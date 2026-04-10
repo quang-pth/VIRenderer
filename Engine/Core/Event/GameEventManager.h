@@ -5,19 +5,19 @@
 #include"Core/Type/String/StringID.h"
 
 namespace VIEngine {
-    class VI_API EventManager {
+    class VI_API GameEventManager {
     public:
-        EventManager();
-        ~EventManager();
+        GameEventManager();
+        ~GameEventManager();
         void ExecuteEvent(const EventContext& eventContext);
         void DispatchEvent(const EventContext& eventContext);
         void ProcessEvents();
 
-        EventActionHandle RegisterEventListener(const std::string& eventName, const EventAction& eventAction);
+        EventActionHandle RegisterEventListener(const std::string& eventName, const EventAction<EventContext>& eventAction);
         void UnregisterEventListener(const std::string& eventName, EventActionHandle actionHandle);
     private:
         std::priority_queue<EventContext> mEventQueue;
-        std::unordered_map<StringID, EventActionList> mActionMap;
+        std::unordered_map<StringID, EventActionList<EventContext>> mActionMap;
         EventActionHandle mTotalListener;
     };
 }

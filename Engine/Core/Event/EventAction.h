@@ -4,8 +4,14 @@
 #include"Core/Event/EventParam.h"
 
 namespace VIEngine {
-	using EventAction = std::function<bool(const EventContext&)>;
+	template<typename T>
+	using EventAction = std::function<bool(const T&)>;
+
     using EventActionHandle = uint16_t;
-	using EventActionPair = std::pair<EventActionHandle, EventAction>;
-	using EventActionList = std::vector<EventActionPair>;
+	
+	template<typename T>
+	using EventActionPair = std::pair<EventActionHandle, EventAction<T>>;
+	
+	template<typename T>
+	using EventActionList = std::vector<EventActionPair<T>>;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include"Core/pch.h"
+#include"Core/Type/Object/RTTI.h"
 
 namespace VIEngine {
     struct WindowConfiguration {
@@ -10,6 +11,7 @@ namespace VIEngine {
     };
 
     class VI_API Window {
+        DECLARE_RTTI
     public:
         static Window* Create(uint16_t width, uint16_t height, const std::string& title);
         static Window* Create(const WindowConfiguration& windowConfig);

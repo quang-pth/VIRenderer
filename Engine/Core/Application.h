@@ -2,8 +2,10 @@
 #include"pch.h"
 #include"Core/Window/Window.h"
 #include"Core/Time/Timer.h"
-#include"Core/Event/EventManager.h"
+#include"Core/Event/GameEventManager.h"
 #include"Core/Layer/LayerStack.h"
+#include"Core/Input/InputEvent.h"
+#include"Core/Input/InputEventManager.h"
 
 namespace VIEngine {
     struct VI_API ApplicationConfiguration {
@@ -22,7 +24,8 @@ namespace VIEngine {
         virtual void Shutdown();
 
         VI_FORCE_INLINE const ApplicationConfiguration& GetConfig() const { return mAppConfig; }
-        VI_FORCE_INLINE EventManager& GetEventManager() { return mEventManager; }
+        VI_FORCE_INLINE GameEventManager& GetGameEventManager() { return mGameEventManager; }
+        VI_FORCE_INLINE InputEventManager& GetInputEventManager() { return mInputEventManager; }
         VI_FORCE_INLINE size_t GetFrameCount() const { return mFrameCount; }
 
         virtual void OnInitClient() = 0;
@@ -33,12 +36,12 @@ namespace VIEngine {
         void PushLayer(Layer* layer, bool overlay = false);
         void PopLayer(Layer* layer, bool overlay = false);
     private:
-        bool OnKeyPressed(const EventContext& eventContext);
-        bool OnKeyReleased(const EventContext& eventContext);
-        bool OnMousePressed(const EventContext& eventContext);
-        bool OnMouseReleased(const EventContext& eventContext);
-        bool OnMouseMoved(const EventContext& eventContext);
-        bool OnMouseWheel(const EventContext& eventContext);
+        bool OnKeyPressed(const KeyPressedEvent& keyEvent);
+        bool OnKeyReleased(const KeyReleasedEvent& keyEvent);
+        bool OnMouseButtonPressed(const MouseButtonPressedEvent& mouseEvent);
+        bool OnMouseButtonReleased(const MouseButtonReleasedEvent& mouseEvent);
+        bool OnMouseMoved(const MouseMovedEvent& mouseEvent);
+        bool OnMouseScrolled(const MouseScrolledEvent& mouseEvent);
         bool OnWindowQuit(const EventContext& eventContext);
     private:
         ApplicationConfiguration mAppConfig;
@@ -46,7 +49,8 @@ namespace VIEngine {
         bool mIsRunning = true;
         size_t mFrameCount;
         Timer mTimer;
-        EventManager mEventManager;
+        GameEventManager mGameEventManager;
+        InputEventManager mInputEventManager;
         LayerStack mLayerStack;
     };
 

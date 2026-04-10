@@ -22,8 +22,9 @@ namespace VIEngine {
 }
 
 #define DECLARE_RTTI \
-	static const VIEngine::RTTI RunTimeType; \
-	virtual const VIEngine::RTTI& GetRunTimeTypeInfo() const;
+	public: \
+		static const VIEngine::RTTI RunTimeType; \
+		virtual const VIEngine::RTTI& GetRunTimeTypeInfo() const;
 
 #define DEFINE_RTTI(typeName, parent) \
 	const VIEngine::RTTI typeName::RunTimeType(#typeName, &parent); \
