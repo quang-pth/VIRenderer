@@ -21,6 +21,7 @@ namespace VIEngine {
 
     class VI_API StringID {
     public:
+        StringID() = default;
         explicit StringID(uint64_t data);
         explicit StringID(const char* data);
         ~StringID();

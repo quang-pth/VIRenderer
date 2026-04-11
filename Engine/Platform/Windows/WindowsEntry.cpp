@@ -2,6 +2,7 @@
 #include"Core/Logger/Logger.h"
 #include"Core/Input/Input.h"
 
+#ifndef TEST_APP
 #ifdef _DEBUG
 int main() {
 #else
@@ -23,3 +24,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return 0;
 }
+#endif

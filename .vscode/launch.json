@@ -40,6 +40,14 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/build/Debug/x64/Engine/Test/Debug",
             "program": "${workspaceFolder}/build/Debug/x64/Engine/Test/Debug/EngineTests.exe"
+        },
+        {
+            "name": "Engine Test Release X64",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/build/Release/x64/Engine/Test/Release",
+            "program": "${workspaceFolder}/build/Release/x64/Engine/Test/Release/EngineTests.exe"
         }
     ]
 }
