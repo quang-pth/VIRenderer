@@ -36,13 +36,13 @@ namespace VIEngine {
         void PushLayer(Layer* layer, bool overlay = false);
         void PopLayer(Layer* layer, bool overlay = false);
     private:
-        bool OnKeyPressed(const KeyPressedEvent& keyEvent);
-        bool OnKeyReleased(const KeyReleasedEvent& keyEvent);
-        bool OnMouseButtonPressed(const MouseButtonPressedEvent& mouseEvent);
-        bool OnMouseButtonReleased(const MouseButtonReleasedEvent& mouseEvent);
-        bool OnMouseMoved(const MouseMovedEvent& mouseEvent);
-        bool OnMouseScrolled(const MouseScrolledEvent& mouseEvent);
-        bool OnWindowQuit(const EventContext& eventContext);
+        bool OnKeyPressedEvent(const KeyPressedEvent& keyEvent);
+        bool OnKeyReleasedEvent(const KeyReleasedEvent& keyEvent);
+        bool OnMouseButtonPressedEvent(const MouseButtonPressedEvent& mouseEvent);
+        bool OnMouseButtonReleasedEvent(const MouseButtonReleasedEvent& mouseEvent);
+        bool OnMouseMovedEvent(const MouseMovedEvent& mouseEvent);
+        bool OnMouseScrolledEvent(const MouseScrolledEvent& mouseEvent);
+        bool OnWindowQuitEvent(const EventContext& eventContext);
     private:
         ApplicationConfiguration mAppConfig;
         std::unique_ptr<Window> mWindow;

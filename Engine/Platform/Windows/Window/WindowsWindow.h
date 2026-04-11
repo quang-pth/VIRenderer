@@ -15,6 +15,40 @@ namespace VIEngine {
 
     class VI_API WindowsWindow : public Window {
         DECLARE_RTTI
+    private:
+        static LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam);
+
+        /*
+        Windowsのキーコードを拡張キーを変換、さらに左右のキーを区別する。拡張キーでないキーは、左右の区別がないため、そのまま返す
+        例えば、Shiftキーは左と右で同じVK_SHIFTが送られてくるが、lparamの情報をもとに左右を区別している
+        */
+        static WPARAM MapSystemKey(WPARAM wparam, LPARAM lparam);
+
+        // lparamからリピート回数を取得
+        static LPARAM GetRepeatCount(LPARAM lparam);
+
+        // lparamからスキャンコードを取得
+        static uint32_t GetScanCode(LPARAM lparam);
+
+        /*
+        lparamから拡張キーかどうかを取得。
+        1が返る場合は、拡張キーである。0が返る場合は、拡張キーでない。
+        */
+        static bool IsExtendedKey(LPARAM lparam);
+
+        /*
+        lparamからキーの前回の状態を取得。
+        1が返る場合は、キーが押されている状態から離された状態に変化したことを表す。
+        0が返る場合は、キーが離された状態から押されている状態に変化したことを表す。
+        */
+        static uint8_t GetPreviousState(LPARAM lparam);
+
+        /*
+        lparamからキーの遷移状態を取得。
+        1が返る場合は、キーが離れた状態から押された状態に変化したことを表す。
+        0が返る場合は、キーが押された状態から離された状態に変化したことを表す。
+        */
+        static uint8_t GetTransistionState(LPARAM lparam);
     public:
         WindowsWindow() = default;
         WindowsWindow(uint16_t width, uint16_t height, const std::string& title);

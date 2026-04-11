@@ -17,6 +17,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Vendor/DirectXTex/DirectXTex
     ${CMAKE_SOURCE_DIR}/Vendor/DirectXTex/Common
     ${CMAKE_SOURCE_DIR}/Vendor/spdlog/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine)

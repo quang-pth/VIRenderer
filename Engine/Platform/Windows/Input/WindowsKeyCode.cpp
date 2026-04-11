@@ -138,9 +138,6 @@ namespace VIEngine {
 
             default:            return EKeyCode::NONE;
         }
-
-        CORE_LOG_WARN("Invalid windows key {0}, return EKeyCode::NONE", wparam);
-        return EKeyCode::NONE;
     }
 
     uint8_t EngineToWindowsKeyCode(EKeyCode keyCode) 
@@ -274,10 +271,9 @@ namespace VIEngine {
             case EKeyCode::RIGHT_ALT:                   return VK_RMENU;   
             case EKeyCode::RIGHT_SUPER:                 return VK_RWIN;    
             case EKeyCode::MENU:                        return VK_APPS;    
+            
+            default:                                    return 0;
         }
-        
-        CORE_LOG_WARN("Invalid engine key {0}, return oxff", static_cast<uint16_t>(keyCode));
-        return 0x00;
     }
 
     EMouseButton WindowsToEngineMouseButton(WPARAM wparam) {
@@ -295,7 +291,6 @@ namespace VIEngine {
             case XBUTTON2:          return EMouseButton::BUTTON_FORWARD;
         }
 
-        CORE_LOG_WARN("Invalid windows mouse button {0}, return EMouseButton::NONE", wparam);
         return EMouseButton::NONE;
     }
 
@@ -309,8 +304,7 @@ namespace VIEngine {
             case EMouseButton::BUTTON_FORWARD:     return VK_XBUTTON2;
         }
 
-        CORE_LOG_WARN("Invalid engine mouse button {0}, return oxff", static_cast<uint8_t>(mouseButton));
-        return 0x00;
+        return 0;
     }
 
     EGamepad WindowsToEngineGamepad(uint16_t button) {
@@ -329,7 +323,6 @@ namespace VIEngine {
         if (button == XINPUT_GAMEPAD_LEFT_THUMB)            return EGamepad::LEFT_THUMBSTICK;
         if (button == XINPUT_GAMEPAD_RIGHT_THUMB)           return EGamepad::RIGHT_THUMBSTICK;
 
-        CORE_LOG_WARN("Invalid windows gamepad button {0}, return EGamepad::NONE", button);
         return EGamepad::NONE;
     }
 
@@ -352,7 +345,6 @@ namespace VIEngine {
             case EGamepad::RIGHT_THUMBSTICK:     return XINPUT_GAMEPAD_RIGHT_THUMB;
         }
 
-        CORE_LOG_WARN("Invalid engine gamepad button {0}, return 0xffff", static_cast<uint8_t>(gamepad));
-        return 0x0000;
+        return 0;
     }
 }

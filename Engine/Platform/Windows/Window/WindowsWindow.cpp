@@ -7,9 +7,6 @@
 namespace VIEngine {
     DEFINE_RTTI(WindowsWindow, Window::RunTimeType);
 
-    uint8_t mPreviousPressedState[256];
-    uint8_t mCurrentPressedState[256];
-
     Window* Window::Create(uint16_t width, uint16_t height, const std::string& title) {
         return new WindowsWindow(width, height, title);
     }
@@ -18,7 +15,86 @@ namespace VIEngine {
         return new WindowsWindow(windowConfig);
     }
 
-    LRESULT WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
+    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : 
+        Window(width, height, title), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true)
+    {
+        
+    }
+
+    WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
+        Window(windowConfig), mHWND(), mMessage()  
+    {
+    }
+
+    bool WindowsWindow::Init() {
+        CORE_LOG_TRACE("Init WindowsWindow");
+
+        WNDCLASSEX w = {};
+        w.style = CS_HREDRAW | CS_VREDRAW;
+        w.cbSize = sizeof(WNDCLASSEX);
+        w.lpfnWndProc = (WNDPROC)WindowsWindow::WindowProcedure;
+        w.lpszClassName = _T("WindowsWindow");
+        w.hInstance = GetModuleHandleA(NULL);
+        w.hCursor = LoadCursor(NULL, IDC_ARROW);
+
+        if (!RegisterClassEx(&w)) {
+            CORE_LOG_ERROR("Failed to register window class");
+            return false;
+        }
+
+        RECT wrc = { 0, 0, mConfiguration.Width, mConfiguration.Height };
+        AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE);
+        
+        mHWND = CreateWindow(
+            w.lpszClassName, 
+            (mConfiguration.Title.c_str()),
+            WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            wrc.right - wrc.left,
+            wrc.bottom - wrc.top,
+            NULL,
+            NULL,
+            w.hInstance,
+            this 
+        );
+
+        if (mHWND == NULL) {
+            CORE_LOG_ERROR("Failed to create window");
+            return false;
+        }
+	
+    	ShowWindow(mHWND, SW_SHOW);
+        
+        return true;
+    }
+
+    void WindowsWindow::Update() {
+        static Application& application = Application::Get();
+        EventContext quitEventContext{"ON_WINDOW_QUIT", application.GetFrameCount(), EEventPriority::CRITICAL, {}};
+
+        if (PeekMessage(&mMessage, nullptr, 0, 0, PM_REMOVE)) {
+			if (mMessage.message == WM_QUIT) {
+				application.GetGameEventManager().ExecuteEvent(quitEventContext);
+			}
+			TranslateMessage(&mMessage);
+			DispatchMessage(&mMessage);
+		}
+
+		if (mMessage.message == WM_QUIT) {
+			application.GetGameEventManager().ExecuteEvent(quitEventContext);
+		}
+    }
+
+    void WindowsWindow::Close() {
+        DestroyWindow(mHWND);
+    }
+    
+    void WindowsWindow::Shutdown() {
+        CORE_LOG_INFO("Shutdown WindowsWindow");
+    }
+
+    LRESULT WindowsWindow::WindowProcedure(HWND wind, UINT msg, WPARAM wparam, LPARAM lparam) {
         static Application& application = Application::Get();
         
         double mouseX = static_cast<double>(GET_X_LPARAM(lparam));
@@ -34,10 +110,21 @@ namespace VIEngine {
                 }
                 break;
             case WM_KEYDOWN:
-                application.GetInputEventManager().ExecuteEvent<KeyPressedEvent>({WindowsToEngineKeyCode(wparam)});
+            case WM_SYSKEYDOWN:
+                {
+                    uint8_t isRepeated = GetPreviousState(lparam);
+                    if (!isRepeated) {
+                        WPARAM mapKey = MapSystemKey(wparam, lparam);
+                        application.GetInputEventManager().ExecuteEvent<KeyPressedEvent>({WindowsToEngineKeyCode(mapKey)});
+                    }
+                }
                 break;
             case WM_KEYUP:
-                application.GetInputEventManager().ExecuteEvent<KeyReleasedEvent>({WindowsToEngineKeyCode(wparam)});
+            case WM_SYSKEYUP:
+                {
+                    WPARAM mapKey = MapSystemKey(wparam, lparam);
+                    application.GetInputEventManager().ExecuteEvent<KeyReleasedEvent>({WindowsToEngineKeyCode(mapKey)});
+                }
                 break;
             case WM_LBUTTONDOWN:
             case WM_RBUTTONDOWN:
@@ -119,84 +206,44 @@ namespace VIEngine {
         return DefWindowProcW(wind, msg, wparam, lparam);
     }
 
-    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : 
-        Window(width, height, title), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true)
-    {
+    WPARAM WindowsWindow::MapSystemKey(WPARAM wparam, LPARAM lparam) {
+        bool isExtended = IsExtendedKey(lparam);
+
+        if (wparam == VK_MENU) {
+            if (isExtended) return VK_RMENU;
+            return VK_LMENU;
+            
+        }
+        if (wparam == VK_CONTROL) {
+            if (isExtended) return VK_RCONTROL;
+            return VK_LCONTROL;
+        }
         
-    }
-
-    WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
-        Window(windowConfig), mHWND(), mMessage()  
-    {
-        memset(mPreviousPressedState, 0, sizeof(mPreviousPressedState));
-        memset(mCurrentPressedState, 0, sizeof(mCurrentPressedState));
-    }
-
-    bool WindowsWindow::Init() {
-        CORE_LOG_TRACE("Init WindowsWindow");
-
-        WNDCLASSEX w = {};
-        w.style = CS_HREDRAW | CS_VREDRAW;
-        w.cbSize = sizeof(WNDCLASSEX);
-        w.lpfnWndProc = (WNDPROC)WindowProcedure;
-        w.lpszClassName = _T("WindowsWindow");
-        w.hInstance = GetModuleHandleA(NULL);
-        w.hCursor = LoadCursor(NULL, IDC_ARROW);
-
-        if (!RegisterClassEx(&w)) {
-            CORE_LOG_ERROR("Failed to register window class");
-            return false;
+        if (wparam == VK_SHIFT) {
+            uint32_t scancode = GetScanCode(lparam);
+            return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
         }
 
-        RECT wrc = { 0, 0, mConfiguration.Width, mConfiguration.Height };
-        AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE);
-        
-        mHWND = CreateWindow(
-            w.lpszClassName, 
-            (mConfiguration.Title.c_str()),
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            wrc.right - wrc.left,
-            wrc.bottom - wrc.top,
-            NULL,
-            NULL,
-            w.hInstance,
-            this 
-        );
-
-        if (mHWND == NULL) {
-            CORE_LOG_ERROR("Failed to create window");
-            return false;
-        }
-	
-    	ShowWindow(mHWND, SW_SHOW);
-        
-        return true;
+        return wparam;
     }
 
-    void WindowsWindow::Update() {
-        static Application& application = Application::Get();
-        EventContext quitEventContext{"ON_WINDOW_QUIT", application.GetFrameCount(), EEventPriority::CRITICAL, {}};
-
-        if (PeekMessage(&mMessage, nullptr, 0, 0, PM_REMOVE)) {
-			if (mMessage.message == WM_QUIT) {
-				application.GetGameEventManager().ExecuteEvent(quitEventContext);
-			}
-			TranslateMessage(&mMessage);
-			DispatchMessage(&mMessage);
-		}
-
-		if (mMessage.message == WM_QUIT) {
-			application.GetGameEventManager().ExecuteEvent(quitEventContext);
-		}
+    LPARAM WindowsWindow::GetRepeatCount(LPARAM lparam) {
+        return lparam & 0xffff;
     }
 
-    void WindowsWindow::Close() {
-        DestroyWindow(mHWND);
+    uint32_t WindowsWindow::GetScanCode(LPARAM lparam) {
+        return (lparam >> 16) & 0xff; 
     }
-    
-    void WindowsWindow::Shutdown() {
-        CORE_LOG_INFO("Shutdown WindowsWindow");
+
+    bool WindowsWindow::IsExtendedKey(LPARAM lparam) {
+        return (lparam >> 24) & 1;
+    }
+
+    uint8_t WindowsWindow::GetPreviousState(LPARAM lparam) {
+        return (lparam >> 30) & 1;
+    }
+
+    uint8_t WindowsWindow::GetTransistionState(LPARAM lparam) {
+        return (lparam >> 31) & 1;
     }
 }

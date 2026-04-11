@@ -2,6 +2,12 @@
 #include"Core/Logger/Logger.h"
 #include"Core/Input/Input.h"
 
+#define DISPATCH_LAYER_EVENT(eventType, eventContext) for (auto iter = mLayerStack.rbegin(); iter != mLayerStack.rend(); ++iter) {\
+	if (!(*iter)->On##eventType(eventContext)) {\
+		break;\
+	}\
+}
+
 namespace VIEngine {
     Application* Application::sInstance = nullptr;
 
@@ -16,14 +22,14 @@ namespace VIEngine {
     }
 
     bool Application::Init() {
-        mInputEventManager.RegisterEventListener<KeyPressedEvent>(BIND_EVENT_FUNCTION(OnKeyPressed));
-        mInputEventManager.RegisterEventListener<KeyReleasedEvent>(BIND_EVENT_FUNCTION(OnKeyReleased));
-        mInputEventManager.RegisterEventListener<MouseButtonPressedEvent>(BIND_EVENT_FUNCTION(OnMouseButtonPressed));
-        mInputEventManager.RegisterEventListener<MouseButtonReleasedEvent>(BIND_EVENT_FUNCTION(OnMouseButtonReleased));
-        mInputEventManager.RegisterEventListener<MouseMovedEvent>(BIND_EVENT_FUNCTION(OnMouseMoved));
-        mInputEventManager.RegisterEventListener<MouseScrolledEvent>(BIND_EVENT_FUNCTION(OnMouseScrolled));
+        mInputEventManager.RegisterEventListener<KeyPressedEvent>(BIND_EVENT_FUNCTION(OnKeyPressedEvent));
+        mInputEventManager.RegisterEventListener<KeyReleasedEvent>(BIND_EVENT_FUNCTION(OnKeyReleasedEvent));
+        mInputEventManager.RegisterEventListener<MouseButtonPressedEvent>(BIND_EVENT_FUNCTION(OnMouseButtonPressedEvent));
+        mInputEventManager.RegisterEventListener<MouseButtonReleasedEvent>(BIND_EVENT_FUNCTION(OnMouseButtonReleasedEvent));
+        mInputEventManager.RegisterEventListener<MouseMovedEvent>(BIND_EVENT_FUNCTION(OnMouseMovedEvent));
+        mInputEventManager.RegisterEventListener<MouseScrolledEvent>(BIND_EVENT_FUNCTION(OnMouseScrolledEvent));
 
-        mGameEventManager.RegisterEventListener("ON_WINDOW_QUIT", BIND_EVENT_FUNCTION(OnWindowQuit));
+        mGameEventManager.RegisterEventListener("ON_WINDOW_QUIT", BIND_EVENT_FUNCTION(OnWindowQuitEvent));
 
         mWindow.reset(Window::Create(mAppConfig.WindowConfig));
         VI_ASSERT(mWindow != nullptr && "Failed to create application window");
@@ -83,47 +89,54 @@ namespace VIEngine {
         }
     }
 
-    bool Application::OnKeyPressed(const KeyPressedEvent& keyEvent) {
-        CORE_LOG_DEBUG("Key {0} is pressed", (int)keyEvent.GetKey());
+    bool Application::OnKeyPressedEvent(const KeyPressedEvent& keyEvent) {
         if (keyEvent.GetKey() == EKeyCode::ESCAPE) {
             mIsRunning = false;
             mWindow->Close();
             return false;
         }
-        return true;
-    }
-    
-    bool Application::OnKeyReleased(const KeyReleasedEvent& keyEvent) {
-        CORE_LOG_DEBUG("Key {0} is released", (int)keyEvent.GetKey());
-        return true;
-    }
-    
-    bool Application::OnMouseButtonPressed(const MouseButtonPressedEvent& mouseEvent) {
-        CORE_LOG_DEBUG("Mouse {0} is pressed: (x: {1}, y: {2})", (int)mouseEvent.GetButton(), mouseEvent.GetPositionX(), mouseEvent.GetPositionY());
+
+        DISPATCH_LAYER_EVENT(KeyPressedEvent, keyEvent);
+        
         return false;
     }
     
-    bool Application::OnMouseButtonReleased(const MouseButtonReleasedEvent& mouseEvent) {
+    bool Application::OnKeyReleasedEvent(const KeyReleasedEvent& keyEvent) {
+        CORE_LOG_DEBUG("Key {0} is released", (int)keyEvent.GetKey());
+        DISPATCH_LAYER_EVENT(KeyReleasedEvent, keyEvent);
+        return false;
+    }
+    
+    bool Application::OnMouseButtonPressedEvent(const MouseButtonPressedEvent& mouseEvent) {
+        CORE_LOG_DEBUG("Mouse {0} is pressed: (x: {1}, y: {2})", (int)mouseEvent.GetButton(), mouseEvent.GetPositionX(), mouseEvent.GetPositionY());
+        DISPATCH_LAYER_EVENT(MouseButtonPressedEvent, mouseEvent);        
+        return false;
+    }
+    
+    bool Application::OnMouseButtonReleasedEvent(const MouseButtonReleasedEvent& mouseEvent) {
         CORE_LOG_DEBUG("Mouse {0} is released: (x: {1}, y: {2})", (int)mouseEvent.GetButton(), mouseEvent.GetPositionX(), mouseEvent.GetPositionY());
+        DISPATCH_LAYER_EVENT(MouseButtonReleasedEvent, mouseEvent);        
         return false;
     }
 
-    bool Application::OnMouseMoved(const MouseMovedEvent& mouseEvent) {
+    bool Application::OnMouseMovedEvent(const MouseMovedEvent& mouseEvent) {
         CORE_LOG_TRACE("Mouse position: (x: {0}, y: {1}), offset: (x: {2}, y: {3})", 
             mouseEvent.GetPositionX(), 
             mouseEvent.GetPositionY(), 
             mouseEvent.GetOffsetX(), 
             mouseEvent.GetOffsetY()
         );
+        DISPATCH_LAYER_EVENT(MouseMovedEvent, mouseEvent);        
         return false;
     }
 
-    bool Application::OnMouseScrolled(const MouseScrolledEvent& mouseEvent) {
+    bool Application::OnMouseScrolledEvent(const MouseScrolledEvent& mouseEvent) {
         CORE_LOG_TRACE("Mouse scrolled: (Delta: {0})", mouseEvent.GetDelta());
+        DISPATCH_LAYER_EVENT(MouseScrolledEvent, mouseEvent);
         return false;
     }
 
-    bool Application::OnWindowQuit(const EventContext& eventContext) {
+    bool Application::OnWindowQuitEvent(const EventContext& eventContext) {
         mIsRunning = false;
         return false;
     }

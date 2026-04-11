@@ -7,7 +7,8 @@
                 "${workspaceFolder}/Vendor/DirectXTex/DirectXTex",
                 "${workspaceFolder}/Vendor/DirectXTex/Common",
                 "${workspaceFolder}/Vendor/spdlog/include",
-                "${workspaceFolder}/Engine"
+                "${workspaceFolder}/Engine",
+                "${workspaceFolder}/MMDApp/Source"
             ],
             "defines": ["_DEBUG"],
             "cStandard": "c17",
