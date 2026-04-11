@@ -32,6 +32,14 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/build/Release/x64/MMDApp/Release",
             "program": "${workspaceFolder}/build/Release/x64/MMDApp/Release/MMDApp.exe"
+        },
+        {
+            "name": "Engine Test Debug X64",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/build/Debug/x64/Engine/Test/Debug",
+            "program": "${workspaceFolder}/build/Debug/x64/Engine/Test/Debug/EngineTests.exe"
         }
     ]
 }

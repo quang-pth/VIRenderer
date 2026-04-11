@@ -3,6 +3,10 @@ project("Engine")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
+enable_testing()
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
+
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Core/*.cpp CMAKE_CONFIGURE_DEPENDS)
 
 if(WIN32)
@@ -19,7 +23,10 @@ if(WIN32)
     )
 endif()
 
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/pch.h)
+target_precompile_headers(${PROJECT_NAME} PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/pch.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Windows/pch.h
+)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

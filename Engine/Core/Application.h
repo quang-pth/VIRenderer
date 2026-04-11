@@ -20,7 +20,7 @@ namespace VIEngine {
 	public:
 		virtual ~Application() = default;
 		virtual bool Init();
-        void Run();
+        virtual void Run();
         virtual void Shutdown();
 
         VI_FORCE_INLINE const ApplicationConfiguration& GetConfig() const { return mAppConfig; }

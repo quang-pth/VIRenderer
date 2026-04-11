@@ -33,6 +33,6 @@ robocopy "./Vendors/bin/"  "./build/%BUILD_TYPE%/%ARCH%/lib/%BUILD_TYPE%/" /E
 
 rem compile project
 
-cd build/%BUILD_TYPE%/%ARCH% && cmake --build . --config %BUILD_TYPE%
+cd build/%BUILD_TYPE%/%ARCH% && cmake --build . --config %BUILD_TYPE% && ctest -C %BUILD_TYPE% --output-on-failure
 
 echo compilation finished!

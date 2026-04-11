@@ -11,8 +11,13 @@ namespace VIEngine {
     constexpr long long FNV_PRIME = 0x100000001b3;
     constexpr long long FNV_OFFSET_BASIS = 0xcbf29ce484222325;
 
-    constexpr const unsigned long long HashConcatString(unsigned long long base, const char *str);
-    constexpr const unsigned long long HashString(const char *str);
+    constexpr const unsigned long long HashConcatString(unsigned long long base, const char *str) {
+        return (*str) ? HashConcatString(base ^ *str * FNV_PRIME, str + 1) : base;       
+    }
+
+    constexpr const unsigned long long HashString(const char *str) {
+        return HashConcatString(FNV_OFFSET_BASIS, str);
+    }
 
     class VI_API StringID {
     public:

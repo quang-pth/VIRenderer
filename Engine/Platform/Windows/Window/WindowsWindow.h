@@ -1,5 +1,6 @@
 #pragma once
 
+#include"Platform/Windows/pch.h"
 #include"Core/Window/Window.h"
 #include"Core/Application.h"
 #include"Core/Type/Object/RTTI.h"
