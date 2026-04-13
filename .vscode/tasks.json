@@ -43,6 +43,28 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "type": "shell",
+            "label": "Test Engine Debug X64",
+            "windows": {"command": "${workspaceFolder}/test-window.bat Debug x64 Engine"},  
+            "problemMatcher": ["$gcc"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Test Engine Release X64",
+            "windows": {"command": "${workspaceFolder}/test-window.bat Release x64 Engine"},  
+            "problemMatcher": ["$gcc"],
+            "options": {"cwd": "${workspaceFolder}"},
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ],
     "version": "2.0.0"

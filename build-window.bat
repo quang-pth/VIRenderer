@@ -8,14 +8,12 @@ set PROJECT_NAME=%3
 if "%BUILD_TYPE%"=="" set BUILD_TYPE=Debug
 if /I "%BUILD_TYPE%" NEQ "Debug" if /I "%BUILD_TYPE%" NEQ "Release" (
     echo Invalid build type: %BUILD_TYPE%
-    echo Usage: build-window.bat [Debug|Release] [x86|x64]
     exit /b 1
 )
 
 if "%ARCH%"=="" set ARCH=x64
 if /I "%ARCH%" NEQ "x86" if /I "%ARCH%" NEQ "x64" (
     echo Invalid architecture: %ARCH%
-    echo Usage: build-window.bat [Debug|Release] [x86|x64]
     exit /b 1
 )
 
@@ -33,6 +31,6 @@ robocopy "./Vendors/bin/"  "./build/%BUILD_TYPE%/%ARCH%/lib/%BUILD_TYPE%/" /E
 
 rem compile project
 
-cd build/%BUILD_TYPE%/%ARCH% && cmake --build . --config %BUILD_TYPE% && ctest -C %BUILD_TYPE% --output-on-failure
+cd build/%BUILD_TYPE%/%ARCH% && cmake --build . --config %BUILD_TYPE%
 
 echo compilation finished!
