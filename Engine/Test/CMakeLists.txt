@@ -15,9 +15,10 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Vendor/spdlog/include
     ${CMAKE_SOURCE_DIR}/Engine
     ${CMAKE_SOURCE_DIR}/Vendor/googletest/googletest/include
+    ${CMAKE_SOURCE_DIR}/Vendor/glm
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE gtest Engine)
+target_link_libraries(${PROJECT_NAME} PRIVATE gtest Engine glm)
 
 include(GoogleTest)
 enable_testing()

@@ -8,6 +8,7 @@
                 "${workspaceFolder}/Vendor/DirectXTex/Common",
                 "${workspaceFolder}/Vendor/spdlog/include",
                 "${workspaceFolder}/Vendor/googletest/googletest/include",
+                "${workspaceFolder}/Vendor/glm",
                 "${workspaceFolder}/Engine",
                 "${workspaceFolder}/MMDApp/Source"
             ],

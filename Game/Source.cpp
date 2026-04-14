@@ -52,7 +52,7 @@ size_t AlignmentSize(size_t size, size_t alignment) {
 
 struct Vertex {
 	DirectX::XMFLOAT3 pos;	
-	DirectX::XMFLOAT2 uv;	
+	DirectX::XMFLOAT2 uv;
 };
 
 struct TexRGBA {
@@ -69,13 +69,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	w.lpfnWndProc = (WNDPROC)WindowProcedure; // ウィンドウプロシージャを指定
 	w.lpszClassName = _T("VIRenderer"); // ウィンドウクラスの名前を指定
 	w.hInstance = GetModuleHandleA(NULL); // インスタンスハンドルを指定
-	
 	RegisterClassEx(&w); // ウィンドウクラスをOSに登録
-
 	const uint16_t windowWidth = 1280;
 	const uint16_t windowHeight = 720;
 	const uint16_t backBuffersCount = 2;
-
 	RECT wrc = { 0, 0, windowWidth, windowHeight }; // ウィンドウのクライアント領域のサイズを指定
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE); // ウィンドウサイズをクライアント領域のサイズから計算
 	// ウィンドウを作成

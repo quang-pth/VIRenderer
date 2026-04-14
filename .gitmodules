@@ -10,3 +10,6 @@
 [submodule "Vendor/googletest"]
 	path = Vendor/googletest
 	url = git@github.com:google/googletest.git
+[submodule "Vendor/glm"]
+	path = Vendor/glm
+	url = https://github.com/g-truc/glm.git

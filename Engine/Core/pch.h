@@ -68,12 +68,15 @@
 #if defined(__clang__) || defined(_gcc__)
 	#define VI_FORCE_INLINE __attribute__((always_inline)) inline
 	#define VI_NOINLINE __attribute__((noinline))
+	#define IN_SIZE(size) __attribute__((nonnull))
 #elif defined(_MSC_VER)
 	#define VI_FORCE_INLINE __forceinline
 	#define VI_NOINLINE __declspec(noinline)
+	#define IN_SIZE(size) _In_reads_(size)
 #else
 	#define VI_FORCE_INLINE inline
 	#define VI_NOINLINE
+	#define IN_SIZE(size)
 #endif
 
 #define VI_FREE_MEMORY(memory) if (memory != nullptr) { delete memory; memory = nullptr; }

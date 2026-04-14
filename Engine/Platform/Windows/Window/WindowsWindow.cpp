@@ -18,7 +18,6 @@ namespace VIEngine {
     WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : 
         Window(width, height, title), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true)
     {
-        
     }
 
     WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
