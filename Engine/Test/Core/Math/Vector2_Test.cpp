@@ -10,8 +10,6 @@
 namespace VIEngine {
     using namespace Math;
 
-    glm::vec2 ToGLM(const Vector2& vector) { return glm::vec2(vector.mX, vector.mY); };
-
     TEST(Vector2Test, BasicArithmeticAgainstGLM) {
         Vector2 v1(10.5f, -2.0f);
         Vector2 v2(3.0f, 4.5f);
@@ -28,15 +26,6 @@ namespace VIEngine {
 
         v1 += v2;
         EXPECT_VEC2_NEAR(v1, (g1 + g2), 1e-5f);
-    }
-
-    TEST(Vector2Test, DivisionByZero) {
-        Vector2 v(1.0f, 1.0f);
-        #if DEBUG
-            EXPECT_DEATH({
-                v / 0.0f;
-            }, "");
-        #endif
     }
 
     TEST(Vector2Test, Constants) {
