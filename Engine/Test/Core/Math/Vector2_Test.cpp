@@ -2,13 +2,11 @@
 #include<glm/glm.hpp>
 #include<glm/gtc/epsilon.hpp>
 #include"Core/Math/Vector2.h"
+#include"Core/Math/Compute.h"
+#include"Test/Core/Math/Helper.h"
 
-#define EXPECT_VEC2_NEAR(v_engine, v_glm, abs_error) \
-    EXPECT_NEAR(v_engine.mX, v_glm.x, abs_error); \
-    EXPECT_NEAR(v_engine.mY, v_glm.y, abs_error)
-
-namespace VIEngine {
-    using namespace Math;
+namespace Test {
+    using namespace VIEngine::Math;
 
     TEST(Vector2Test, BasicArithmeticAgainstGLM) {
         Vector2 v1(10.5f, -2.0f);
@@ -29,11 +27,36 @@ namespace VIEngine {
     }
 
     TEST(Vector2Test, Constants) {
-        EXPECT_FLOAT_EQ(Vector2::Zero.mX, 0.0f);
-        EXPECT_FLOAT_EQ(Vector2::Zero.mY, 0.0f);
-        EXPECT_FLOAT_EQ(Vector2::UnitX.mX, 1.0f);
-        EXPECT_FLOAT_EQ(Vector2::UnitX.mY, 0.0f);
-        EXPECT_FLOAT_EQ(Vector2::NegUnitY.mY, -1.0f);
+        EXPECT_FLOAT_EQ(Vector2::Zero.X, 0.0f);
+        EXPECT_FLOAT_EQ(Vector2::Zero.Y, 0.0f);
+        
+        EXPECT_FLOAT_EQ(Vector2::UnitX.X, 1.0f);
+        EXPECT_FLOAT_EQ(Vector2::UnitX.Y, 0.0f);
+        
+        EXPECT_FLOAT_EQ(Vector2::UnitY.X, 0.0f);
+        EXPECT_FLOAT_EQ(Vector2::UnitY.Y, 1.0f);
+        
+        EXPECT_FLOAT_EQ(Vector2::NegUnitX.X, -1.0f);
+        EXPECT_FLOAT_EQ(Vector2::NegUnitX.Y, 0.0f);
+
+        EXPECT_FLOAT_EQ(Vector2::NegUnitY.X, 0.0f);
+        EXPECT_FLOAT_EQ(Vector2::NegUnitY.Y, -1.0f);
+    }
+
+    TEST(Vector2Test, LengthUnitVector) {
+        EXPECT_FLOAT_EQ(GetLength(Vector2::UnitX), 1.0f);
+        EXPECT_FLOAT_EQ(GetLength(Vector2::UnitY), 1.0f);
+        
+        EXPECT_FLOAT_EQ(GetLength(Vector2::NegUnitX), 1.0f);
+        EXPECT_FLOAT_EQ(GetLength(Vector2::NegUnitY), 1.0f);
+    }
+
+    TEST(Vector2Test, LengthSquaredUnitVector) {
+        EXPECT_FLOAT_EQ(GetLengthSquared(Vector2::UnitX), 1.0f);
+        EXPECT_FLOAT_EQ(GetLengthSquared(Vector2::UnitY), 1.0f);
+        
+        EXPECT_FLOAT_EQ(GetLengthSquared(Vector2::NegUnitX), 1.0f);
+        EXPECT_FLOAT_EQ(GetLengthSquared(Vector2::NegUnitY), 1.0f);
     }
 
     TEST(Vector2Test, MemoryLayout) {
@@ -42,25 +65,25 @@ namespace VIEngine {
         EXPECT_EQ(ptr[0], 1.0f);
         EXPECT_EQ(ptr[1], 2.0f);
         EXPECT_EQ(sizeof(Vector2), sizeof(float) * 2);
-        EXPECT_EQ(offsetof(Vector2, mX), 0);
-        EXPECT_EQ(offsetof(Vector2, mY), sizeof(float));
+        EXPECT_EQ(offsetof(Vector2, X), 0);
+        EXPECT_EQ(offsetof(Vector2, Y), sizeof(float));
     }
 
     TEST(Vector2Test, ConstructionAndMemory) {
         Vector2 v1;
         
         Vector2 v2(1.0f, 2.0f);
-        EXPECT_FLOAT_EQ(v2.mX, 1.0f);
-        EXPECT_FLOAT_EQ(v2.mY, 2.0f);
+        EXPECT_FLOAT_EQ(v2.X, 1.0f);
+        EXPECT_FLOAT_EQ(v2.Y, 2.0f);
 
         Vector2 v3(5.0f);
-        EXPECT_FLOAT_EQ(v3.mX, 5.0f);
-        EXPECT_FLOAT_EQ(v3.mY, 5.0f);
+        EXPECT_FLOAT_EQ(v3.X, 5.0f);
+        EXPECT_FLOAT_EQ(v3.Y, 5.0f);
 
         float data[] = { 10.0f, 20.0f };
         Vector2 v4(data);
-        EXPECT_FLOAT_EQ(v4.mX, 10.0f);
-        EXPECT_FLOAT_EQ(v4.mY, 20.0f);
+        EXPECT_FLOAT_EQ(v4.X, 10.0f);
+        EXPECT_FLOAT_EQ(v4.Y, 20.0f);
     }
 
     TEST(Vector2Test, EqualityOperators) {
@@ -82,8 +105,8 @@ namespace VIEngine {
         Vector2 res1 = v * s;
         Vector2 res2 = s * v; 
         
-        EXPECT_EQ(res1.mX, res2.mX);
-        EXPECT_EQ(res1.mY, res2.mY);
+        EXPECT_EQ(res1.X, res2.X);
+        EXPECT_EQ(res1.Y, res2.Y);
     }
 
     TEST(Vector2Test, CompoundAssignment) {
@@ -91,27 +114,27 @@ namespace VIEngine {
         Vector2 other(3.0f, 4.0f);
 
         v += other;
-        EXPECT_FLOAT_EQ(v.mX, 4.0f);
-        EXPECT_FLOAT_EQ(v.mY, 6.0f);
+        EXPECT_FLOAT_EQ(v.X, 4.0f);
+        EXPECT_FLOAT_EQ(v.Y, 6.0f);
 
         v -= Vector2(1.0f, 1.0f);
-        EXPECT_FLOAT_EQ(v.mX, 3.0f);
-        EXPECT_FLOAT_EQ(v.mY, 5.0f);
+        EXPECT_FLOAT_EQ(v.X, 3.0f);
+        EXPECT_FLOAT_EQ(v.Y, 5.0f);
 
         v *= 2.0f;
-        EXPECT_FLOAT_EQ(v.mX, 6.0f);
-        EXPECT_FLOAT_EQ(v.mY, 10.0f);
+        EXPECT_FLOAT_EQ(v.X, 6.0f);
+        EXPECT_FLOAT_EQ(v.Y, 10.0f);
 
         v /= 2.0f;
-        EXPECT_FLOAT_EQ(v.mX, 3.0f);
-        EXPECT_FLOAT_EQ(v.mY, 5.0f);
+        EXPECT_FLOAT_EQ(v.X, 3.0f);
+        EXPECT_FLOAT_EQ(v.Y, 5.0f);
     }
 
     TEST(Vector2Test, AdvancedEdgeCases) {
         Vector2 v(123.45f, -67.89f);
         Vector2 zeroRes = v * 0.0f;
-        EXPECT_FLOAT_EQ(zeroRes.mX, 0.0f);
-        EXPECT_FLOAT_EQ(zeroRes.mY, 0.0f);
+        EXPECT_FLOAT_EQ(zeroRes.X, 0.0f);
+        EXPECT_FLOAT_EQ(zeroRes.Y, 0.0f);
 
         Vector2 vSame(0.123456f, 0.123456f);
         Vector2 diff = vSame - vSame;
@@ -119,7 +142,7 @@ namespace VIEngine {
 
         Vector2 large(FLT_MAX, FLT_MAX);
         Vector2 scaledLarge = large * 2.0f;
-        EXPECT_TRUE(std::isinf(scaledLarge.mX));
+        EXPECT_TRUE(std::isinf(scaledLarge.X));
 
         Vector2 negZero(-0.0f, -0.0f);
         EXPECT_TRUE(negZero == Vector2::Zero); 

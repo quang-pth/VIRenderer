@@ -9,7 +9,7 @@ namespace VIEngine::Math {
     const Vector2 Vector2::NegUnitY = {0.0f, -1.0f};
 
     bool Vector2::operator==(const Vector2& other) const {
-        return mX == other.mX && mY == other.mY;
+        return X == other.X && Y == other.Y;
     }
 
     bool Vector2::operator!=(const Vector2& other) const {
@@ -17,44 +17,44 @@ namespace VIEngine::Math {
     }
 
     Vector2 Vector2::operator+(const Vector2& other) const {
-        return { mX + other.mX, mY + other.mY };
+        return { X + other.X, Y + other.Y };
     }
 
     Vector2 Vector2::operator-(const Vector2& other) const {
-        return { mX - other.mX, mY - other.mY };
+        return { X - other.X, Y - other.Y };
     }
 
     Vector2& Vector2::operator+=(const Vector2& other) {
-        mX += other.mX;
-        mY += other.mY;
+        X += other.X;
+        Y += other.Y;
         return *this;
     }
 
     Vector2& Vector2::operator-=(const Vector2& other) {
-        mX -= other.mX;
-        mY -= other.mY;
+        X -= other.X;
+        Y -= other.Y;
         return *this;
     }
 
     Vector2 Vector2::operator*(float scalar) const {
-        return { mX * scalar, mY * scalar };
+        return { X * scalar, Y * scalar };
     }
 
     Vector2 Vector2::operator/(float scalar) const {
         VI_ASSERT(!Math::IsNearZero(scalar) && "Division by scalar that is near to zero");
-        return { mX / scalar, mY / scalar };
+        return { X / scalar, Y / scalar };
     }
 
     Vector2& Vector2::operator*=(float scalar) {
-        mX *= scalar;
-        mY *= scalar;
+        X *= scalar;
+        Y *= scalar;
         return *this;
     }
 
     Vector2& Vector2::operator/=(float scalar) {
         VI_ASSERT(!Math::IsNearZero(scalar) && "Division by scalar that is near to zero");
-        mX /= scalar;
-        mY /= scalar;
+        X /= scalar;
+        Y /= scalar;
         return *this;
     }
 

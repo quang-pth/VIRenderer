@@ -1,7 +1,9 @@
 #include<gtest/gtest.h>
 #include"Core/Type/Object/RTTI.h"
 
-namespace VIEngine {
+namespace Test {
+    using namespace VIEngine;
+    
     class Base {
     DECLARE_RTTI
     public:

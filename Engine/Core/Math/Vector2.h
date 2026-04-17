@@ -11,8 +11,8 @@ namespace VIEngine::Math {
         static const Vector2 NegUnitX;
         static const Vector2 NegUnitY;
     public:
-        float mX;
-        float mY;
+        float X;
+        float Y;
     public:
         Vector2() = default;
 
@@ -22,9 +22,9 @@ namespace VIEngine::Math {
         Vector2(Vector2&&) = default;
         Vector2& operator=(Vector2&&) = default;
         
-        constexpr Vector2(float x, float y) noexcept : mX(x), mY(y) {}
-        constexpr Vector2(float value) noexcept : mX(value), mY(value) {}
-        explicit Vector2(IN_SIZE(2) const float* values) noexcept : mX(values[0]), mY(values[1]) {}
+        constexpr Vector2(float x, float y) noexcept : X(x), Y(y) {}
+        constexpr Vector2(float value) noexcept : X(value), Y(value) {}
+        explicit Vector2(IN_SIZE(2) const float* values) noexcept : X(values[0]), Y(values[1]) {}
         
         ~Vector2() = default;
 

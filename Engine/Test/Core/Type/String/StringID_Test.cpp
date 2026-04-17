@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include"Core/Type/String/StringID.h"
 
-namespace VIEngine {
+namespace Test {
+    using namespace VIEngine;
+
     TEST(StringIDTest, Consistency) {
         StringID id1("Player_Texture");
         StringID id2("Player_Texture");
