@@ -120,4 +120,52 @@ namespace VIEngine::Math {
         };
     }
     #pragma endregion Vector3
+
+    #pragma region Matrix3
+    void Transpose(Matrix3& matrix) {
+        std::swap(matrix[0][1], matrix[1][0]);   
+        std::swap(matrix[0][2], matrix[2][0]);
+        std::swap(matrix[1][2], matrix[2][1]);
+    }
+
+    Matrix3 GetTranspose(const Matrix3& matrix) {
+        Matrix3 result = matrix;
+        Transpose(result);
+        return result;
+    }
+
+    const float* GetValuePtr(const Matrix3& matrix) { return &matrix[0][0]; }
+
+    Matrix3 CreateScale(float x, float y) {
+        float scale[3][3]= {
+            {x, 0.0f, 0.0f},
+            {0.0f, y, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        return Matrix3(scale);
+    }
+
+    Matrix3 CreateScale(float k) {
+        return CreateScale(k, k);
+    }
+
+    Matrix3 CreateRotation(float theta) {
+        float rotation[3][3] = {
+            {Math::Cos(theta), Math::Sin(theta), 0.0f},
+            {-Math::Sin(theta), Math::Cos(theta), 0.0f},
+            {0.0f, 0.0f, 1.0f},
+        };
+        return Matrix3(rotation);
+    }
+
+    Matrix3 CreateTranslation(float x, float y) {
+        float translate[3][3] = {
+            {1.0f, 0.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {x, y, 1.0f},
+        };
+        return Matrix3(translate);
+    }
+
+    #pragma endregion Matrix3
 }

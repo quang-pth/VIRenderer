@@ -1,7 +1,3 @@
-#include<gtest/gtest.h>
-#include<glm/glm.hpp>
-#include"Core/Math/Math.h"
-#include"Core/Math/Vector2.h"
 #include"Test/Core/Math/Helper.h"
 
 namespace Test {
@@ -62,6 +58,44 @@ namespace Test {
         EXPECT_NEAR(ToRadians(-90.0f), -PI_OVER_2, BASE_EPSILON);
     }
 
+    TEST(MathUtilsTest, Sin) {
+        EXPECT_NEAR(Sin(0.0f), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Sin(PI_OVER_2), 1.0f, BASE_EPSILON);
+        EXPECT_NEAR(Sin(PI), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Sin(TWO_Pi), 0.0f, BASE_EPSILON);
+    }
+
+    TEST(MathUtilsTest, Cos) {
+        EXPECT_NEAR(Cos(0.0f), 1.0f, BASE_EPSILON);
+        EXPECT_NEAR(Cos(PI_OVER_2), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Cos(PI), -1.0f, BASE_EPSILON);
+        EXPECT_NEAR(Cos(TWO_Pi), 1.0f, BASE_EPSILON);
+    }
+
+    TEST(MathUtilsTest, Tan) {
+        EXPECT_NEAR(Tan(0.0f), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Tan(PI_OVER_4), 1.0f, BASE_EPSILON);
+        EXPECT_NEAR(Tan(-PI_OVER_4), -1.0f, BASE_EPSILON);
+    }
+
+    TEST(MathUtilsTest, Cot) {
+        EXPECT_NEAR(Cot(PI_OVER_4), 1.0f, BASE_EPSILON);
+        EXPECT_NEAR(Cot(-PI_OVER_4), -1.0f, BASE_EPSILON);
+    }
+
+    TEST(MathUtilsTest, Acos) {
+        EXPECT_NEAR(Acos(1.0f), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Acos(0.0f), PI_OVER_2, BASE_EPSILON);
+        EXPECT_NEAR(Acos(-1.0f), PI, BASE_EPSILON);
+    }
+
+    TEST(MathUtilsTest, Atan2) {
+        EXPECT_NEAR(Atan2(0.0f, 1.0f), 0.0f, BASE_EPSILON);
+        EXPECT_NEAR(Atan2(1.0f, 0.0f), PI_OVER_2, BASE_EPSILON);
+        EXPECT_NEAR(Atan2(0.0f, -1.0f), PI, BASE_EPSILON);
+        EXPECT_NEAR(Atan2(-1.0f, 0.0f), -PI_OVER_2, BASE_EPSILON);
+    }
+
     TEST(MathUtilsTest, ClampVector2ScalarAgainstGLM) {
         Vector2 v(10.5f, -5.0f);
         glm::vec2 g(10.5f, -5.0f);
@@ -115,4 +149,6 @@ namespace Test {
 
         EXPECT_VEC3_NEAR(clamped, gClamped, BASE_EPSILON);
     }
+
+
 }

@@ -1,8 +1,3 @@
-#include<gtest/gtest.h>
-#include<glm/glm.hpp>
-#include<glm/gtc/epsilon.hpp>
-#include"Core/Math/Vector3.h"
-#include"Core/Math/Compute.h"
 #include"Test/Core/Math/Helper.h"
     
 namespace Test {
@@ -17,13 +12,38 @@ namespace Test {
         glm::vec3 g2(3.0f, 4.5f, -5.5f);
 
         Vector3 resAdd = v1 + v2;
-        EXPECT_VEC3_NEAR(resAdd, (g1 + g2), 1e-5f);
+        EXPECT_VEC3_NEAR(resAdd, (g1 + g2), BASE_EPSILON);
 
         Vector3 resMul = v1 * scalar;
-        EXPECT_VEC3_NEAR(resMul, (g1 * scalar), 1e-5f);
+        EXPECT_VEC3_NEAR(resMul, (g1 * scalar), BASE_EPSILON);
 
         v1 += v2;
-        EXPECT_VEC3_NEAR(v1, (g1 + g2), 1e-5f);
+        EXPECT_VEC3_NEAR(v1, (g1 + g2), BASE_EPSILON);
+    }
+
+    TEST(Vector3Test, CrossProduct) {
+        Vector3 v1(1.0f, 0.0f, 0.0f);
+        Vector3 v2(0.0f, 1.0f, 0.0f);
+        Vector3 cross = Cross(v1, v2);
+        EXPECT_FLOAT_EQ(cross.X, 0.0f);
+        EXPECT_FLOAT_EQ(cross.Y, 0.0f);
+        EXPECT_FLOAT_EQ(cross.Z, 1.0f);
+
+        Vector3 v3(1.0f, 2.0f, 3.0f);
+        Vector3 v4(4.0f, 5.0f, 6.0f);
+        Vector3 cross2 = Cross(v3, v4);
+        EXPECT_FLOAT_EQ(cross2.X, -3.0f);
+        EXPECT_FLOAT_EQ(cross2.Y, 6.0f);
+        EXPECT_FLOAT_EQ(cross2.Z, -3.0f);
+
+        Vector3 v5(1.0f, 1.0f, 1.0f);
+        Vector3 crossParallel = Cross(v5, v5);
+        EXPECT_EQ(crossParallel, Vector3::Zero);
+
+        glm::vec3 g3(1.0f, 2.0f, 3.0f);
+        glm::vec3 g4(4.0f, 5.0f, 6.0f);
+        glm::vec3 gCross = glm::cross(g3, g4);
+        EXPECT_VEC3_NEAR(cross2, gCross, BASE_EPSILON);
     }
 
     TEST(Vector3Test, Constants) {

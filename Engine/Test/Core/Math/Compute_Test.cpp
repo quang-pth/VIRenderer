@@ -1,7 +1,3 @@
-#include<gtest/gtest.h>
-#include<glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include"Core/Math/Compute.h"
 #include"Test/Core/Math/Helper.h"
 
 namespace Test {
@@ -201,4 +197,199 @@ namespace Test {
         EXPECT_NEAR(res2.X, 1.0f, BASE_EPSILON);
     }
     #pragma endregion Vector3MathTest
+
+    #pragma region Matrix3MathTest
+    TEST(Matrix3Test, TransposeAgainstGLM) {
+        float values[3][3] = {
+            {1, 2, 3}, 
+            {4, 5, 6}, 
+            {7, 8, 9}
+        }; 
+        Matrix3 m{&values[0][0]};
+
+        glm::mat3 gm = glm::mat3(
+            1, 4, 7,
+            2, 5, 8,
+            3, 6, 9
+        );
+        ExpectMatrix3Near(m, glm::transpose(gm)); 
+        
+        Matrix3 transposed = GetTranspose(m);
+        ExpectMatrix3Near(transposed, gm); 
+
+        Transpose(m);
+        ExpectMatrix3Near(m, gm);
+    }
+
+    TEST(Matrix3Test, TransposeSpecialMatrices) {
+        Matrix3 identity = Matrix3::Identity; 
+        Matrix3 identityT = GetTranspose(identity);
+        ExpectMatrix3Near(identityT, glm::mat3(1.0f));
+
+        float values[3][3] = {
+            {1, 0, 2}, 
+            {0, 3, 4},
+            {2, 4, 5}
+        };
+        Matrix3 sym{&values[0][0]};
+        Matrix3 symT = GetTranspose(sym);
+        ExpectMatrix3Near(sym, symT);
+    }
+
+    TEST(Matrix3Test, TransposeDoubleFlip) {
+        float values[3][3] = {
+            {1, 0, 2}, 
+            {0, 3, 4}, 
+            {2, 4, 5}
+        };
+        Matrix3 matrix{&values[0][0]};
+        Matrix3 tranposeMatrix = GetTranspose(GetTranspose(matrix));
+        ExpectMatrix3Near(matrix, tranposeMatrix);
+    }
+
+    TEST(Matrix3Test, GetValuePtr) {
+        float values[3][3] = {
+            {1, 0, 2}, 
+            {0, 3, 4}, 
+            {2, 4, 5}
+        };
+        Matrix3 matrix{&values[0][0]};
+        const float* matrixPtr = GetValuePtr(matrix);
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                EXPECT_EQ(matrixPtr[i * 3 + j], matrix[i][j]);
+            }
+        }
+    }
+
+    TEST(Matrix3Test, CreateScale) {
+        float sx = 2.0f, sy = 3.0f;
+        Matrix3 scaleMatrix = CreateScale(sx, sy);
+        float expected[3][3] = {
+            {sx, 0.0f, 0.0f},
+            {0.0f, sy, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expected[0][0]));
+
+        // 0.5倍のスケーリングもテスト
+        sx = 0.5f; sy = 0.5f;
+        scaleMatrix = CreateScale(sx, sy);
+        float expectedHalf[3][3] = {
+            {sx, 0.0f, 0.0f},
+            {0.0f, sy, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expectedHalf[0][0]));
+
+        // 負のスケーリングもテスト
+        sx = -1.0f; sy = -2.0f;
+        scaleMatrix = CreateScale(sx, sy);
+        float expectedNegative[3][3] = {
+            {sx, 0.0f, 0.0f},
+            {0.0f, sy, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expectedNegative[0][0]));
+    }
+
+    TEST(Matrix3Test, CreateUniformScale) {
+        float k = 2.5f;
+        Matrix3 scaleMatrix = CreateScale(k);
+        float expected[3][3] = {
+            {k, 0.0f, 0.0f},
+            {0.0f, k, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expected[0][0]));
+
+        // 0.5倍のスケーリングもテスト
+        k = 0.5f;
+        scaleMatrix = CreateScale(k);
+        float expectedHalf[3][3] = {
+            {k, 0.0f, 0.0f},
+            {0.0f, k, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expectedHalf[0][0]));
+
+        // 負のスケーリングもテスト
+        k = -1.0f;
+        scaleMatrix = CreateScale(k);
+        float expectedNegative[3][3] = {
+            {k, 0.0f, 0.0f},
+            {0.0f, k, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(scaleMatrix, glm::make_mat3(&expectedNegative[0][0]));
+    }
+
+    TEST(Matrix3Test, CreateRotation) {
+        float angle = ToRadians(45.0f);
+        Matrix3 rotationMatrix = CreateRotation(angle);
+        float c = Cos(angle);
+        float s = Sin(angle);
+        float expected[3][3] = {
+            {c, s, 0.0f},
+            {-s, c, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(rotationMatrix, glm::make_mat3(&expected[0][0]));
+
+        // 90度回転もテスト
+        angle = ToRadians(90.0f);
+        rotationMatrix = CreateRotation(angle);
+        c = Cos(angle);
+        s = Sin(angle);
+        float expected90[3][3] = {
+            {c, s, 0.0f},
+            {-s, c, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(rotationMatrix, glm::make_mat3(&expected90[0][0]));
+
+        // 0度回転もテスト
+        angle = ToRadians(0.0f);
+        rotationMatrix = CreateRotation(angle);
+        c = Cos(angle);
+        s = Sin(angle);
+        float expected0[3][3] = {
+            {c, s, 0.0f},
+            {-s, c, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        };
+        ExpectMatrix3Near(rotationMatrix, glm::make_mat3(&expected0[0][0]));
+    }
+
+    TEST(Matrix3Test, CreateTranslation) {
+        float tx = 5.0f, ty = -3.0f;
+        Matrix3 translationMatrix = CreateTranslation(tx, ty);
+        float expected[3][3] = {
+            {1.0f, 0.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {tx, ty, 1.0f}
+        };
+        ExpectMatrix3Near(translationMatrix, glm::make_mat3(&expected[0][0]));
+
+        // 原点への平行移動もテスト
+        tx = 0.0f; ty = 0.0f;
+        translationMatrix = CreateTranslation(tx, ty);
+        float expectedOrigin[3][3] = {
+            {1.0f, 0.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {tx, ty, 1.0f}
+        };
+        ExpectMatrix3Near(translationMatrix, glm::make_mat3(&expectedOrigin[0][0]));
+
+        // 負の平行移動もテスト
+        tx = -2.0f; ty = -4.0f;
+        translationMatrix = CreateTranslation(tx, ty);
+        float expectedNegative[3][3] = {
+            {1.0f, 0.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {tx, ty, 1.0f}
+        };
+        ExpectMatrix3Near(translationMatrix, glm::make_mat3(&expectedNegative[0][0]));
+    }
+    #pragma endregion Matrix3MathTest
 }

@@ -1,8 +1,3 @@
-#include<gtest/gtest.h>
-#include<glm/glm.hpp>
-#include<glm/gtc/epsilon.hpp>
-#include"Core/Math/Vector2.h"
-#include"Core/Math/Compute.h"
 #include"Test/Core/Math/Helper.h"
 
 namespace Test {

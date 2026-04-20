@@ -3,6 +3,7 @@
 #include"Core/Math/Math.h"
 #include"Core/Math/Vector2.h"
 #include"Core/Math/Vector3.h"
+#include"Core/Math/Matrix3.h"
 
 namespace VIEngine::Math {
     #pragma region Vector2
@@ -52,4 +53,21 @@ namespace VIEngine::Math {
     // 2つのベクトルの外積を計算する
     Vector3 Cross(const Vector3& lhs, const Vector3& rhs);
     #pragma endregion Vector3
+
+    #pragma region Matrix3
+    // 行列を転置する
+    void Transpose(Matrix3& matrix);
+    // 行列の転置を返す
+    Matrix3 GetTranspose(const Matrix3& matrix);
+    // 行列の値へのポインタを取得する
+    const float* GetValuePtr(const Matrix3& vector);
+    // x,y方向のスケーリング行列を作成する
+    Matrix3 CreateScale(float x, float y);
+    // x,y方向の同一スケーリング行列を作成する
+    Matrix3 CreateScale(float k);
+    // z軸回転行列を作成する
+    Matrix3 CreateRotation(float theta);
+    // 2D平行移動行列を作成する
+    Matrix3 CreateTranslation(float x, float y);
+    #pragma endregion Matrix3
 }
