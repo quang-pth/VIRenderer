@@ -46,7 +46,7 @@ namespace VIEngine::Math {
 
     Vector3 Vector3::operator/(float scalar) const {
         VI_ASSERT(!Math::IsNearZero(scalar) && "Division by scalar that is near to zero");
-        return { X / scalar, Y / scalar, Z / scalar };
+        return *this * (1.0f / scalar);
     }
 
     Vector3& Vector3::operator*=(float scalar) {
@@ -58,9 +58,7 @@ namespace VIEngine::Math {
 
     Vector3& Vector3::operator/=(float scalar) {
         VI_ASSERT(!Math::IsNearZero(scalar) && "Division by scalar that is near to zero");
-        X /= scalar;
-        Y /= scalar;
-        Z /= scalar;
+        *this *= (1.0f / scalar);
         return *this;
     }
 

@@ -6,9 +6,9 @@ namespace VIEngine::Math {
     class VI_API Matrix3 {
     public:
         static const Matrix3 Identity;
+        static const Matrix3 Zero;
     public:
         Matrix3();
-        Matrix3(float value);
         
         Matrix3(const Matrix3&) = default;
         Matrix3& operator=(const Matrix3&) = default;

@@ -38,6 +38,8 @@ namespace VIEngine::Math {
     VI_FORCE_INLINE float Cot(float value) { return 1.0f / tanf(value); }
     VI_FORCE_INLINE float Acos(float value) { return acosf(value); }
     VI_FORCE_INLINE float Atan2(float y, float x) { return atan2f(y, x); }
+    VI_FORCE_INLINE float Fabs(float value) { return fabsf(value); }
+    VI_FORCE_INLINE float Sqrtf(float value) { return sqrtf(value); }
 
     // ベクトルの各要素をminとmaxの範囲内にクランプする
     template<typename T>

@@ -3,7 +3,7 @@
 #include"Core/pch.h"
 
 namespace VIEngine::Math {
-    struct VI_API Vector2 {
+    class VI_API Vector2 {
     public:
         static const Vector2 Zero;
         static const Vector2 UnitX;
@@ -11,8 +11,13 @@ namespace VIEngine::Math {
         static const Vector2 NegUnitX;
         static const Vector2 NegUnitY;
     public:
-        float X;
-        float Y;
+        union {
+            struct {
+                float X;
+                float Y;
+            };
+            float Data[2];
+        };
     public:
         Vector2() = default;
 
@@ -24,7 +29,9 @@ namespace VIEngine::Math {
         
         constexpr Vector2(float x, float y) noexcept : X(x), Y(y) {}
         constexpr Vector2(float value) noexcept : X(value), Y(value) {}
-        explicit Vector2(IN_SIZE(2) const float* values) noexcept : X(values[0]), Y(values[1]) {}
+        explicit Vector2(IN_SIZE(2) const float* values) noexcept {
+            memcpy(&Data[0], values, sizeof(float) * 2);
+        }
         
         ~Vector2() = default;
 

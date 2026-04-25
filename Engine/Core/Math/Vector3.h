@@ -3,7 +3,9 @@
 #include"Core/pch.h"
 
 namespace VIEngine::Math {
-    struct VI_API Vector3 {
+    class Vector4;
+
+    class VI_API Vector3 {
     public:
         static const Vector3 Zero;
         static const Vector3 UnitX;
@@ -13,9 +15,19 @@ namespace VIEngine::Math {
         static const Vector3 NegUnitY;
         static const Vector3 NegUnitZ;
     public:
-        float X;
-        float Y;
-        float Z;
+        union {
+            struct {
+                float X;
+                float Y;
+                float Z;
+            };
+            struct {
+                float R;
+                float G;
+                float B;
+            };
+            float Data[3];
+        };
     public:
         Vector3() = default;
 
@@ -27,8 +39,9 @@ namespace VIEngine::Math {
         
         constexpr Vector3(float x, float y, float z = 0.0f) noexcept : X(x), Y(y), Z(z) {}
         constexpr Vector3(float value) noexcept : X(value), Y(value), Z(value) {}
-        explicit Vector3(IN_SIZE(3) const float* values) noexcept : X(values[0]), Y(values[1]), Z(values[2]) {}
-        
+        explicit Vector3(IN_SIZE(3) const float* values) noexcept {
+            memcpy(&Data[0], values, sizeof(float) * 3);
+        }
         ~Vector3() = default;
 
         bool operator==(const Vector3& other) const;

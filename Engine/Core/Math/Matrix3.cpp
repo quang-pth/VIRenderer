@@ -7,13 +7,16 @@ namespace VIEngine::Math {
         { 0.0f, 0.0f, 1.0f }
     };
     const Matrix3 Matrix3::Identity(&identity[0][0]);
+    
+    static float zero[3][3] ={
+        { 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f }
+    };
+    const Matrix3 Matrix3::Zero(&zero[0][0]);
 
     Matrix3::Matrix3() {
         *this = Identity;
-    }
-
-    Matrix3::Matrix3(float value) {
-        std::memset(mData, value, sizeof(float) * 9);
     }
 
     Matrix3 Matrix3::operator*(const Matrix3& other) {

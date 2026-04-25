@@ -40,12 +40,12 @@ namespace Test {
         glm::mat3 g2 = glm::make_mat3(&bValues[0][0]);
         glm::mat3 gRes = g2 * g1;
 
-        ExpectMatrix3Near(m1, g1);
-        ExpectMatrix3Near(m2, g2);
-        ExpectMatrix3Near(res, gRes);
+        ExpectMatrixNear(m1, g1);
+        ExpectMatrixNear(m2, g2);
+        ExpectMatrixNear(res, gRes);
 
         m1 *= m2;
-        ExpectMatrix3Near(m1, gRes);
+        ExpectMatrixNear(m1, gRes);
     }
 
     TEST(Matrix3Test, SpecialMatrices) {
@@ -58,10 +58,10 @@ namespace Test {
         Matrix3 identity = Matrix3::Identity;
         
         Matrix3 res = m * identity;
-        ExpectMatrix3Near(m, res);
+        ExpectMatrixNear(m, res);
         
-        Matrix3 zero{0.0f};
+        Matrix3 zero = Matrix3::Zero;
         Matrix3 resZero = m * zero;
-        ExpectMatrix3Near(zero, resZero);
+        ExpectMatrixNear(zero, resZero);
     }
 }
