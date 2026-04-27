@@ -262,9 +262,9 @@ namespace Test {
         }
     }
 
-    TEST(Matrix3Test, CreateScale) {
+    TEST(Matrix3Test, CreateScale2D) {
         float sx = 2.0f, sy = 3.0f;
-        Matrix3 scaleMatrix = CreateScale(sx, sy);
+        Matrix3 scaleMatrix = CreateScale2D(sx, sy);
         float expected[3][3] = {
             {sx, 0.0f, 0.0f},
             {0.0f, sy, 0.0f},
@@ -274,7 +274,7 @@ namespace Test {
 
         // 0.5倍のスケーリングもテスト
         sx = 0.5f; sy = 0.5f;
-        scaleMatrix = CreateScale(sx, sy);
+        scaleMatrix = CreateScale2D(sx, sy);
         float expectedHalf[3][3] = {
             {sx, 0.0f, 0.0f},
             {0.0f, sy, 0.0f},
@@ -284,7 +284,7 @@ namespace Test {
 
         // 負のスケーリングもテスト
         sx = -1.0f; sy = -2.0f;
-        scaleMatrix = CreateScale(sx, sy);
+        scaleMatrix = CreateScale2D(sx, sy);
         float expectedNegative[3][3] = {
             {sx, 0.0f, 0.0f},
             {0.0f, sy, 0.0f},
@@ -293,9 +293,9 @@ namespace Test {
         ExpectMatrixNear(scaleMatrix, glm::make_mat3(&expectedNegative[0][0]));
     }
 
-    TEST(Matrix3Test, CreateUniformScale) {
+    TEST(Matrix3Test, CreateUniformScale2D) {
         float k = 2.5f;
-        Matrix3 scaleMatrix = CreateScale(k);
+        Matrix3 scaleMatrix = CreateScale2D(k);
         float expected[3][3] = {
             {k, 0.0f, 0.0f},
             {0.0f, k, 0.0f},
@@ -305,7 +305,7 @@ namespace Test {
 
         // 0.5倍のスケーリングもテスト
         k = 0.5f;
-        scaleMatrix = CreateScale(k);
+        scaleMatrix = CreateScale2D(k);
         float expectedHalf[3][3] = {
             {k, 0.0f, 0.0f},
             {0.0f, k, 0.0f},
@@ -315,7 +315,7 @@ namespace Test {
 
         // 負のスケーリングもテスト
         k = -1.0f;
-        scaleMatrix = CreateScale(k);
+        scaleMatrix = CreateScale2D(k);
         float expectedNegative[3][3] = {
             {k, 0.0f, 0.0f},
             {0.0f, k, 0.0f},
@@ -391,6 +391,31 @@ namespace Test {
         };
         ExpectMatrixNear(translationMatrix, glm::make_mat3(&expectedNegative[0][0]));
     }
+    
+    TEST(Matrix3Test, IsOrthonormal) {
+        float values[3][3] = {
+            {1, 0, 0}, 
+            {0, 2, 0}, 
+            {0, 0, 3}
+        };
+        Matrix3 orthonormalMatrix = Matrix3(values);
+        EXPECT_TRUE(IsOrthonormal(orthonormalMatrix));
+    }
+
+    TEST(Matrix3Test, IsOrthonormalIdentityMatrix) {
+        Matrix3 orthonormalMatrix = Matrix3::Identity;
+        EXPECT_TRUE(IsOrthonormal(orthonormalMatrix));
+    }
+
+    TEST(Matrix3Test, IsNotOrthonormal) {
+        float values[3][3] = {
+            {1.0f, 2.0f, 3.0f},
+            {0.0f, 1.0f, 4.0f},
+            {5.0f, 6.0f, 0.0f}
+        };
+        Matrix3 nonOrthonormalMatrix = Matrix3(values);
+        EXPECT_FALSE(IsOrthonormal(nonOrthonormalMatrix));
+    }
     #pragma endregion Matrix3MathTest
 
     #pragma region Matrix4MathTest
@@ -458,9 +483,9 @@ namespace Test {
         }
     }
 
-    TEST(Matrix4Test, CreateScale) {
+    TEST(Matrix4Test, CreateScale3D) {
         float sx = 2.0f, sy = 3.0f, sz = 4.0f;
-        Matrix4 scaleMatrix = CreateScale(sx, sy, sz);
+        Matrix4 scaleMatrix = CreateScale3D(sx, sy, sz);
         float expected[4][4] = {
             {sx, 0.0f, 0.0f, 0.0f},
             {0.0f, sy, 0.0f, 0.0f},
@@ -471,7 +496,7 @@ namespace Test {
 
         // 0.5倍のスケーリングもテスト
         sx = 0.5f; sy = 0.5f; sz = 0.5f;
-        scaleMatrix = CreateScale(sx, sy, sz);
+        scaleMatrix = CreateScale3D(sx, sy, sz);
         float expectedHalf[4][4] = {
             {sx, 0.0f, 0.0f, 0.0f},
             {0.0f, sy, 0.0f, 0.0f},
@@ -482,7 +507,7 @@ namespace Test {
 
         // 負のスケーリングもテスト
         sx = -1.0f; sy = -2.0f; sz = -3.0f;
-        scaleMatrix = CreateScale(sx, sy, sz);
+        scaleMatrix = CreateScale3D(sx, sy, sz);
         float expectedNegative[4][4] = {
             {sx, 0.0f, 0.0f, 0.0f},
             {0.0f, sy, 0.0f, 0.0f},
@@ -493,7 +518,7 @@ namespace Test {
 
         // 負のスケーリングもテスト
         sx = -1.0f; sy = -2.0f; sz = -3.0f;
-        scaleMatrix = CreateScale(sx, sy, sz);
+        scaleMatrix = CreateScale3D(sx, sy, sz);
         float expectedNegative2[4][4] = {
             {sx, 0.0f, 0.0f, 0.0f},
             {0.0f, sy, 0.0f, 0.0f},
@@ -503,9 +528,9 @@ namespace Test {
         ExpectMatrixNear(scaleMatrix, glm::make_mat4(&expectedNegative2[0][0]));
     }
 
-    TEST(Matrix4Test, CreateUniformScale) {
+    TEST(Matrix4Test, CreateUniformScale3D) {
         float k = 2.5f;
-        Matrix4 scaleMatrix = CreateUScale(k);
+        Matrix4 scaleMatrix = CreateScale3D(k);
         float expected[4][4] = {
             {k, 0.0f, 0.0f, 0.0f},
             {0.0f, k, 0.0f, 0.0f},
@@ -516,7 +541,7 @@ namespace Test {
 
         // 0.5倍のスケーリングもテスト
         k = 0.5f;
-        scaleMatrix = CreateUScale(k);
+        scaleMatrix = CreateScale3D(k);
         float expectedHalf[4][4] = {
             {k, 0.0f, 0.0f, 0.0f},
             {0.0f, k, 0.0f, 0.0f},
@@ -527,7 +552,7 @@ namespace Test {
 
         // 負のスケーリングもテスト
         k = -1.0f;
-        scaleMatrix = CreateUScale(k);
+        scaleMatrix = CreateScale3D(k);
         float expectedNegative[4][4] = {
             {k, 0.0f, 0.0f, 0.0f},
             {0.0f, k, 0.0f, 0.0f},
@@ -536,27 +561,42 @@ namespace Test {
         };
         ExpectMatrixNear(scaleMatrix, glm::make_mat4(&expectedNegative[0][0]));
     }
-
     
-    // TEST(Matrix4Test, CreateRotationFromQuaternion) {
-    //     float angle = ToRadians(45.0f);
-    //     Vector3 axis(1.0f, 1.0f, 1.0f);
-    //     Matrix4 rotationMatrix = CreateRotation(angle, axis);
-    //     glm::mat4 glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
-    //     ExpectMatrixNear(rotationMatrix, glmRotation);
+    TEST(Matrix4Test, CreateRotationFromQuaternion) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Matrix4 rotation = CreateRotation(angle, axis);
+        glm::mat4 glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::make_vec3(GetValuePtr(axis)));
+        ExpectMatrixNear(rotation, glmRotation);
+    }
 
-    //     // 90度回転もテスト
-    //     angle = ToRadians(90.0f);
-    //     rotationMatrix = CreateRotation(angle, axis);
-    //     glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
-    //     ExpectMatrixNear(rotationMatrix, glmRotation);
+    TEST(Matrix4Test, CreateRotationFromQuaternionX) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 0.0f, 0.0f);
+        Normalize(axis);
+        Matrix4 rotation = CreateRotation(angle, axis);
+        glm::mat4 glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::make_vec3(GetValuePtr(axis)));
+        ExpectMatrixNear(rotation, glmRotation);
+    }
 
-    //     // 0度回転もテスト
-    //     angle = ToRadians(0.0f);
-    //     rotationMatrix = CreateRotation(angle, axis);
-    //     glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
-    //     ExpectMatrixNear(rotationMatrix, glmRotation);
-    // }
+    TEST(Matrix4Test, CreateRotationFromQuaternionY) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(0.0f, 1.0f, 0.0f);
+        Normalize(axis);
+        Matrix4 rotation = CreateRotation(angle, axis);
+        glm::mat4 glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::make_vec3(GetValuePtr(axis)));
+        ExpectMatrixNear(rotation, glmRotation);
+    }
+
+    TEST(Matrix4Test, CreateRotationFromQuaternionZ) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(0.0f, 0.0f, 1.0f);
+        Normalize(axis);
+        Matrix4 rotation = CreateRotation(angle, axis);
+        glm::mat4 glmRotation = glm::rotate(glm::mat4(1.0f), angle, glm::make_vec3(GetValuePtr(axis)));
+        ExpectMatrixNear(rotation, glmRotation);
+    }
 
     TEST(Matrix4Test, CreateRotationX) {
         float angle = ToRadians(45.0f);
@@ -790,6 +830,83 @@ namespace Test {
         ExpectMatrixNear(translationMatrix, glm::make_mat4(&expectedNegative[0][0]));
     }
 
+    TEST(Matrix4MathTest, CreateLookAt) {
+        Vector3 position(0.0f, 0.0f, 0.0f);
+        Vector3 target(0.0f, 0.0f, 1.0f);
+        Vector3 up(0.0f, 1.0f, 0.0f);
+        Matrix4 lookAtMatrix = CreateLookAt(position, target, up);
+        glm::mat4 glmLookAt = glm::lookAt(
+            glm::vec3(position.X, position.Y, position.Z),
+            glm::vec3(target.X, target.Y, target.Z),
+            glm::vec3(up.X, up.Y, up.Z)
+        );
+        ExpectMatrixNear(lookAtMatrix, glmLookAt);
+    }
+
+    TEST(Matrix4MathTest, LookAtTransform) {
+        Vector3 position(0.0f, 0.0f, 0.0f);
+        Vector3 target(0.0f, 0.0f, 1.0f);
+        Vector3 up(0.0f, 1.0f, 0.0f);
+        Matrix4 lookAtMatrix = CreateLookAt(position, target, up);
+        Vector4 point(0.0f, 0.0f, 1.0f);
+        Vector4 transformedPoint = point * lookAtMatrix;
+        glm::mat4 glmLookAt = glm::lookAt(
+            glm::vec3(position.X, position.Y, position.Z),
+            glm::vec3(target.X, target.Y, target.Z),
+            glm::vec3(up.X, up.Y, up.Z)
+        );
+        glm::vec4 expected = glmLookAt * glm::vec4(point.X, point.Y, point.Z, point.W);
+        ExpectVectorEqual(transformedPoint, Vector4(expected.x, expected.y, expected.z, expected.w)); 
+    }
+
+    TEST(Matrix4MathTest, LookAtTransformTargetLeft) {
+        Vector3 position(0.0f, 0.0f, 0.0f);
+        Vector3 target(0.0f, 0.0f, 1.0f);
+        Vector3 up(0.0f, 1.0f, 0.0f);
+        Matrix4 lookAtMatrix = CreateLookAt(position, target, up);
+        Vector4 point(-1.0f, 0.0f, 1.0f);
+        Vector4 transformedPoint = point * lookAtMatrix;
+        glm::mat4 glmLookAt = glm::lookAt(
+            glm::vec3(position.X, position.Y, position.Z),
+            glm::vec3(target.X, target.Y, target.Z),
+            glm::vec3(up.X, up.Y, up.Z)
+        );
+        glm::vec4 expected = glmLookAt * glm::vec4(point.X, point.Y, point.Z, point.W);
+        ExpectVectorEqual(transformedPoint, Vector4(expected.x, expected.y, expected.z, expected.w)); 
+    }
+
+    TEST(Matrix4MathTest, LookAtTransformTargetRight) {
+        Vector3 position(0.0f, 0.0f, 0.0f);
+        Vector3 target(0.0f, 0.0f, 1.0f);
+        Vector3 up(0.0f, 1.0f, 0.0f);
+        Matrix4 lookAtMatrix = CreateLookAt(position, target, up);
+        Vector4 point(1.0f, 0.0f, 1.0f);
+        Vector4 transformedPoint = point * lookAtMatrix;
+        glm::mat4 glmLookAt = glm::lookAt(
+            glm::vec3(position.X, position.Y, position.Z),
+            glm::vec3(target.X, target.Y, target.Z),
+            glm::vec3(up.X, up.Y, up.Z)
+        );
+        glm::vec4 expected = glmLookAt * glm::vec4(point.X, point.Y, point.Z, point.W);
+        ExpectVectorEqual(transformedPoint, Vector4(expected.x, expected.y, expected.z, expected.w)); 
+    }
+
+    TEST(Matrix4MathTest, LookAtTransformTargetArbitrarily) {
+        Vector3 position(1.0f, 2.0f, 3.0f);
+        Vector3 target(4.0f, 5.0f, 6.0f);
+        Vector3 up(0.0f, 1.0f, 0.0f);
+        Matrix4 lookAtMatrix = CreateLookAt(position, target, up);
+        Vector4 point(7.0f, 8.0f, 9.0f);
+        Vector4 transformedPoint = point * lookAtMatrix;
+        glm::mat4 glmLookAt = glm::lookAt(
+            glm::vec3(position.X, position.Y, position.Z),
+            glm::vec3(target.X, target.Y, target.Z),
+            glm::vec3(up.X, up.Y, up.Z)
+        );
+        glm::vec4 expected = glmLookAt * glm::vec4(point.X, point.Y, point.Z, point.W);
+        ExpectVectorEqual(transformedPoint, Vector4(expected.x, expected.y, expected.z, expected.w)); 
+    }
+
     TEST(Matrix4MathTest, CreateOrtho) {
         float width = 800.0f, height = 600.0f, zNear = 0.1f, zFar = 100.0f;
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
@@ -808,7 +925,9 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point(400.0f, 300.0f, 100.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(1.0f, 1.0f, 1.0f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_VEC4_NEAR(transformedPoint, expected, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformNegative) {
@@ -817,7 +936,9 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(-400.0f, -300.0f, 100.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(-1.0f, -1.0f, 1.0f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_VEC4_NEAR(transformedPoint, expected, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformHalf) {
@@ -826,7 +947,12 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(200.0f, 150.0f, 50.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(0.5f, 0.5f, 0.5f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_NEAR(transformedPoint.X, expected.x, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Z, 0.5f, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.W, expected.w, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformHalfNegative) {
@@ -835,7 +961,12 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(-200.0f, -150.0f, 50.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(-0.5f, -0.5f, 0.5f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_NEAR(transformedPoint.X, expected.x, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Z, 0.5f, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.W, expected.w, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformWidthQuarter) {
@@ -844,7 +975,12 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(100.0f, 75.0f, 25.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(0.25f, 0.25f, 0.25f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_NEAR(transformedPoint.X, expected.x, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Z, 0.25f, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.W, expected.w, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformWidthQuarterNegative) {
@@ -853,7 +989,12 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(-100.0f, -75.0f, 25.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        ExpectVectorEqual(transformedPoint, Vector4(-0.25f, -0.25f, 0.25f, 1.0f), baseEpsilon);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_NEAR(transformedPoint.X, expected.x, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Z, 0.25f, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.W, expected.w, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, OrthoTransformOrigin) {
@@ -862,10 +1003,12 @@ namespace Test {
         Matrix4 orthoMatrix = CreateOrtho(width, height, zNear, zFar);
         Vector4 point = Vector4(0.0f, 0.0f, 0.0f);
         Vector4 transformedPoint = point * orthoMatrix;
-        EXPECT_NEAR(transformedPoint.X, 0.0f, baseEpsilon);
-        EXPECT_NEAR(transformedPoint.Y, 0.0f, baseEpsilon);
-        EXPECT_LE(transformedPoint.Z, 0.0f);
-        EXPECT_EQ(transformedPoint.W, 1.0f);
+        glm::mat4 glmOrtho = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, -zNear, -zFar);
+        glm::vec4 expected = glmOrtho * glm::vec4(point.X, point.Y, point.Z, point.W);
+        EXPECT_NEAR(transformedPoint.X, expected.x, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.Z, -0.001f, baseEpsilon);
+        EXPECT_NEAR(transformedPoint.W, expected.w, baseEpsilon);
     }
 
     TEST(Matrix4MathTest, CreatePerspective) {
@@ -895,13 +1038,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(400.0f, 300.0f, 50.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {400.0f, 400.0f, 49.9499f, 50.0f};
-
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
+        
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 49.9499f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformBoundary) {
@@ -914,13 +1058,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(50.0f, 50.0f, 50.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {50.0f, 50.0f * aspect, 49.9499f, 50.0f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 49.9499f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformBoundaryNegative) {
@@ -933,13 +1078,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(-50.0f, -50.0f, 50.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {-50.0f, -50 * aspect, 49.9499f, 50.0f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 49.9499f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformCenter) {
@@ -952,13 +1098,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(0.0f, 0.0f, 50.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {0.0f, 0.0f, 49.9499f, 50.0f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 49.9499f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformNearest) {
@@ -971,13 +1118,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(0.0f, 0.0f, 0.1f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {0.0f, 0.0f, 0.0f, 0.1f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 0.0f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformFarest) {
@@ -990,13 +1138,14 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(0.0f, 0.0f, 100.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {0.0f, 0.0f, 99.9999, 100.0f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 99.9999f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
     }
 
     TEST(Matrix4Test, PerspectiveTransformAlpha60) {
@@ -1009,13 +1158,115 @@ namespace Test {
         Matrix4 perspectiveMatrix = CreatePerspective(fov, aspect, zNear, zFar);
         Vector4 point(2.0f, 1.0f, 10.0f);
         Vector4 transformedPoint = point * perspectiveMatrix;
-        Vector4 expected = {3.4641, 2.3094, 9.9099, 10.0f};
+        glm::mat4 glmPerspective = glm::perspective(fov, aspect, -zNear, -zFar);
+        glm::vec4 expected = glmPerspective * glm::vec4(point.X, point.Y, point.Z, point.W);
 
         float epsilon = 0.0001;
-        EXPECT_NEAR(transformedPoint.X, expected.X, epsilon);
-        EXPECT_NEAR(transformedPoint.Y, expected.Y, epsilon);
-        EXPECT_NEAR(transformedPoint.Z, expected.Z, epsilon);
-        EXPECT_NEAR(transformedPoint.W, expected.W, epsilon);
+        EXPECT_NEAR(transformedPoint.X, expected.x * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Y, expected.y * aspect, epsilon);
+        EXPECT_NEAR(transformedPoint.Z, 9.9099f, epsilon);
+        EXPECT_NEAR(transformedPoint.W, -expected.w, epsilon);
+    }
+
+    TEST(Matrix4MathTest, Invert) {
+        float values[4][4] = {
+            {1.0f, 2.0f, 3.0f, 0.0f},
+            {0.0f, 1.0f, 4.0f, 0.0f},
+            {5.0f, 6.0f, 0.0f, 0.0f},
+            {7.0f, 8.0f, 9.0f, 1.0f}
+        };
+        bool invertedSuccess = false;
+        Matrix4 original(values);
+        Matrix4 invertedMatrix(values);
+        Invert(invertedMatrix, invertedSuccess);
+        Matrix4 identity = original * invertedMatrix;
+        EXPECT_TRUE(invertedSuccess);
+        ExpectMatrixNear(identity, Matrix4::Identity);
+    }
+
+    TEST(Matrix4MathTest, GetInvert) {
+        float values[4][4] = {
+            {1.0f, 2.0f, 3.0f, 0.0f},
+            {0.0f, 1.0f, 4.0f, 0.0f},
+            {5.0f, 6.0f, 0.0f, 0.0f},
+            {7.0f, 8.0f, 9.0f, 1.0f}
+        };
+        bool invertedSuccess = false;
+        Matrix4 original(values);
+        Matrix4 invertedMatrix = GetInvert(original, invertedSuccess);
+        Matrix4 identity = original * invertedMatrix;
+        EXPECT_TRUE(invertedSuccess);
+        ExpectMatrixNear(identity, Matrix4::Identity);
+    }
+
+    TEST(Matrix4MathTest, NotInvertable) {
+        float notInvertable[4][4] = {
+            {1.0f, 2.0f, 3.0f, 0.0f},
+            {2.0f, 4.0f, 6.0f, 0.0f},
+            {3.0f, 6.0f, 9.0f, 0.0f},
+            {0.0f, 0.0f, 0.0f, 1.0f}
+        };
+        bool invertedSucess = false;
+        Matrix4 original(notInvertable);
+        Matrix4 invertMatrix(notInvertable);
+        Invert(invertMatrix, invertedSucess);
+        EXPECT_FALSE(invertedSucess);
+        ExpectMatrixNear(original, invertMatrix);
+    }
+
+    TEST(Matrix4MathTest, GetNotInvertable) {
+        float notInvertable[4][4] = {
+            {1.0f, 2.0f, 3.0f, 0.0f},
+            {2.0f, 4.0f, 6.0f, 0.0f},
+            {3.0f, 6.0f, 9.0f, 0.0f},
+            {0.0f, 0.0f, 0.0f, 1.0f}
+        };
+        bool invertedSucess = false;
+        Matrix4 original(notInvertable);
+        Matrix4 invertMatrix = GetInvert(original, invertedSucess);
+        EXPECT_FALSE(invertedSucess);
+        ExpectMatrixNear(original, invertMatrix);
+    }
+
+    TEST(Matrix4Test, InvertIdentity) {
+        bool invertedSuccess = false;
+        Matrix4 identity = Matrix4::Identity;
+        Matrix4 invertedMatrix = identity;
+        Invert(invertedMatrix, invertedSuccess);
+        EXPECT_TRUE(invertedSuccess);
+        ExpectMatrixNear(invertedMatrix, Matrix4::Identity);
+    }
+
+    TEST(Matrix4Test, GetInvertIdentity) {
+        bool invertedSuccess = false;
+        Matrix4 identity = Matrix4::Identity;
+        Matrix4 invertedMatrix = GetInvert(identity, invertedSuccess);
+        EXPECT_TRUE(invertedSuccess);
+        ExpectMatrixNear(invertedMatrix, Matrix4::Identity);
+    }
+
+    TEST(Matrix4Test, IsOrthonormal) {
+        Matrix4 orthonormalMatrix = 
+            CreateRotationX(ToRadians(30.0f)) * 
+            CreateRotationY(ToRadians(45.0f)) * 
+            CreateRotationZ(ToRadians(60.0f));
+        EXPECT_TRUE(IsOrthonormal(orthonormalMatrix));
+    }
+
+    TEST(Matrix4Test, IsOrthonormalIdentityMatrix) {
+        Matrix4 orthonormalMatrix = Matrix4::Identity;
+        EXPECT_TRUE(IsOrthonormal(orthonormalMatrix));
+    }
+
+    TEST(Matrix4Test, IsNotOrthonormal) {
+        float values[4][4] = {
+            {1.0f, 2.0f, 3.0f, 0.0f},
+            {0.0f, 1.0f, 4.0f, 0.0f},
+            {5.0f, 6.0f, 0.0f, 0.0f},
+            {7.0f, 8.0f, 9.0f, 1.0f}
+        };
+        Matrix4 nonOrthonormalMatrix = Matrix4(values);
+        EXPECT_FALSE(IsOrthonormal(nonOrthonormalMatrix));
     }
     #pragma endregion Matrix4MathTest
 }

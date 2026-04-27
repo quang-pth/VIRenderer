@@ -141,7 +141,7 @@ namespace VIEngine::Math {
 
     const float* GetValuePtr(const Matrix3& matrix) { return &matrix[0][0]; }
 
-    Matrix3 CreateScale(float x, float y) {
+    Matrix3 CreateScale2D(float x, float y) {
         float scale[3][3]= {
             {x, 0.0f, 0.0f},
             {0.0f, y, 0.0f},
@@ -150,8 +150,8 @@ namespace VIEngine::Math {
         return Matrix3(scale);
     }
 
-    Matrix3 CreateScale(float k) {
-        return CreateScale(k, k);
+    Matrix3 CreateScale2D(float k) {
+        return CreateScale2D(k, k);
     }
 
     Matrix3 CreateRotation(float theta) {
@@ -175,6 +175,24 @@ namespace VIEngine::Math {
     Matrix3 CreateTranslation(const Vector2& position) {
         return CreateTranslation(position.X, position.Y);
     }
+
+    bool IsOrthonormal(const Matrix3& matrix) {
+        Vector3 forward(matrix[0][0], matrix[0][1], matrix[0][2]);
+        Normalize(forward);
+        
+        Vector3 strafe(matrix[1][0], matrix[1][1], matrix[1][2]);
+        Normalize(strafe);
+        
+        Vector3 up(matrix[2][0], matrix[2][1], matrix[2][2]);
+        Normalize(up);
+
+        if (!IsNearZero(Dot(forward, strafe))) return false;
+        if (!IsNearZero(Dot(forward, up))) return false;
+        if (!IsNearZero(Dot(up, forward))) return false;
+
+        return true;
+    }
+
     #pragma endregion Matrix3
 
     #pragma region Matrix4
@@ -195,7 +213,7 @@ namespace VIEngine::Math {
 
     const float* GetValuePtr(const Matrix4& matrix) { return &matrix[0][0]; }
 
-    Matrix4 CreateScale(float x, float y, float z) {
+    Matrix4 CreateScale3D(float x, float y, float z) {
         float scale[4][4]= {
             {x, 0.0f, 0.0f, 0.0f},
             {0.0f, y, 0.0f, 0.0f},
@@ -205,18 +223,32 @@ namespace VIEngine::Math {
         return Matrix4(scale);
     }
 
-    Matrix4 CreateUScale(float k) {
-        return CreateScale(k, k, k);
+    Matrix4 CreateScale3D(float k) {
+        return CreateScale3D(k, k, k);
     }
 
     Matrix4 CreateRotation(float theta, const Vector3& axis) {
-        // return CreateRotation(Quaternion(theta, axis));
-        return Matrix4();
+        return CreateRotation(Quaternion(theta, axis));
     }
 
     Matrix4 CreateRotation(const Quaternion& quaternion) {
-        // TODO
-        return Matrix4();
+        Matrix4 rotation;
+
+        rotation[0][0] = 1 - 2 * (quaternion.Y * quaternion.Y + quaternion.Z * quaternion.Z);
+        rotation[0][1] = 2 * (quaternion.X * quaternion.Y +  quaternion.W * quaternion.Z);
+        rotation[0][2] = 2 * (quaternion.X * quaternion.Z - quaternion.W * quaternion.Y);
+
+        rotation[1][0] = 2 * (quaternion.X * quaternion.Y - quaternion.W * quaternion.Z);
+        rotation[1][1] = 1 - 2 * (quaternion.X * quaternion.X + quaternion.Z * quaternion.Z);
+        rotation[1][2] = 2 * (quaternion.Y * quaternion.Z + quaternion.W * quaternion.X);
+
+        rotation[2][0] = 2 * (quaternion.X * quaternion.Z + quaternion.W * quaternion.Y);
+        rotation[2][1] = 2 * (quaternion.Y * quaternion.Z - quaternion.W * quaternion.X);
+        rotation[2][2] = 1 - 2 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
+
+        rotation[3][3] = 1.0f;
+
+        return rotation;
     }
 
     Matrix4 CreateRotationX(float theta) {
@@ -266,22 +298,21 @@ namespace VIEngine::Math {
     Matrix4 CreateLookAt(const Vector3& position, const Vector3& target, const Vector3& worldUp) {
         Vector3 forward = position - target;
         Normalize(forward);
-        Vector3 right = Cross(worldUp, forward);
-        Normalize(right);
-        Vector3 up = Cross(forward, right);
-        Normalize(up);
+        Vector3 strafe = Cross(worldUp, forward);
+        Normalize(strafe);
+        Vector3 up = Cross(forward, strafe);
         // 左手座標系でのビュー行列は、右ベクトル、上ベクトル、前ベクトルを行ベクトルとして持ち、
         // 平行移動成分はカメラ位置に対して右ベクトル、上ベクトル、前ベクトルの内積の負の値になる
         Vector3 translation;
-        translation.X = -Dot(right, position);
+        translation.X = -Dot(strafe, position);
         translation.Y = -Dot(up, position);
         translation.Z = -Dot(forward, position);
         // 直交座標系であるため、回転行列の逆行列は転置行列になる
         float lookAt[4][4] = {
-            {right.X,       up.X,           forward.X,      0.0f},
-            {right.Y,       up.Y,           forward.Y,      0.0f},
-            {right.Z,       up.Z,           forward.Z,      0.0f},
-            {translation.X, translation.Y,  translation.Z,  1.0f}
+            {strafe.X,       up.X,           forward.X,      0.0f},
+            {strafe.Y,       up.Y,           forward.Y,      0.0f},
+            {strafe.Z,       up.Z,           forward.Z,      0.0f},
+            {translation.X,  translation.Y,  translation.Z,  1.0f}
         };
         return Matrix4(lookAt);
     }
@@ -309,6 +340,157 @@ namespace VIEngine::Math {
 		};
 		return Matrix4(perspective);
     }
+
+    void Invert(Matrix4& matrix, bool& invertSuccess) {
+        invertSuccess = true;
+        // 逆行列を計算する前に、行列が正規直交行列であるかどうかを判断する
+        if (IsOrthonormal(matrix)) {
+            // 正規直交行列であれば、回転行列の逆行列は転置行列になるため、転置行列を計算して返す
+            Transpose(matrix);
+            return;
+        }
+
+        float tmp[12];
+        float src[16];
+        float dst[16];
+        float det;
+
+        // 1行を1列にする
+        src[0] = matrix[0][0];
+        src[4] = matrix[0][1];
+        src[8] = matrix[0][2];
+        src[12] = matrix[0][3];
+
+        // 2行を2列にする
+        src[1] = matrix[1][0];
+        src[5] = matrix[1][1];
+        src[9] = matrix[1][2];
+        src[13] = matrix[1][3];
+
+        // 3行を3列にする
+        src[2] = matrix[2][0];
+        src[6] = matrix[2][1];
+        src[10] = matrix[2][2];
+        src[14] = matrix[2][3];
+
+        // 4行を4列にする
+        src[3] = matrix[3][0];
+        src[7] = matrix[3][1];
+        src[11] = matrix[3][2];
+        src[15] = matrix[3][3];
+
+        // cofactorを計算するための一時的な変数を計算する
+        tmp[0] = src[10] * src[15];
+        tmp[1] = src[11] * src[14];
+        tmp[2] = src[9] * src[15];
+        tmp[3] = src[11] * src[13];
+        tmp[4] = src[9] * src[14];
+        tmp[5] = src[10] * src[13];
+        tmp[6] = src[8] * src[15];
+        tmp[7] = src[11] * src[12];
+        tmp[8] = src[8] * src[14];
+        tmp[9] = src[10] * src[12];
+        tmp[10] = src[8] * src[13];
+        tmp[11] = src[9] * src[12];
+
+        // cofactorを計算する
+        dst[0] = tmp[0] * src[5] + tmp[3] * src[6] + tmp[4] * src[7];
+        dst[0] -= tmp[1] * src[5] + tmp[2] * src[6] + tmp[5] * src[7];
+        dst[1] = tmp[1] * src[4] + tmp[6] * src[6] + tmp[9] * src[7];
+        dst[1] -= tmp[0] * src[4] + tmp[7] * src[6] + tmp[8] * src[7];
+        dst[2] = tmp[2] * src[4] + tmp[7] * src[5] + tmp[10] * src[7];
+        dst[2] -= tmp[3] * src[4] + tmp[6] * src[5] + tmp[11] * src[7];
+        dst[3] = tmp[5] * src[4] + tmp[8] * src[5] + tmp[11] * src[6];
+        dst[3] -= tmp[4] * src[4] + tmp[9] * src[5] + tmp[10] * src[6];
+
+
+        // 行列式を計算する
+        det = src[0] * dst[0] + src[1] * dst[1] + src[2] * dst[2] + src[3] * dst[3];
+        if (IsNearZero(det)) {
+            // 行列が特異行列であるため、逆行列は存在しない
+            invertSuccess = false;
+            return;
+        }
+
+        dst[4] = tmp[1] * src[1] + tmp[2] * src[2] + tmp[5] * src[3];
+        dst[4] -= tmp[0] * src[1] + tmp[3] * src[2] + tmp[4] * src[3];
+        dst[5] = tmp[0] * src[0] + tmp[7] * src[2] + tmp[8] * src[3];
+        dst[5] -= tmp[1] * src[0] + tmp[6] * src[2] + tmp[9] * src[3];
+        dst[6] = tmp[3] * src[0] + tmp[6] * src[1] + tmp[11] * src[3];
+        dst[6] -= tmp[2] * src[0] + tmp[7] * src[1] + tmp[10] * src[3];
+        dst[7] = tmp[4] * src[0] + tmp[9] * src[1] + tmp[10] * src[2];
+        dst[7] -= tmp[5] * src[0] + tmp[8] * src[1] + tmp[11] * src[2];
+
+        // cofactorを計算するための一時的な変数を計算する
+        tmp[0] = src[2] * src[7];
+        tmp[1] = src[3] * src[6];
+        tmp[2] = src[1] * src[7];
+        tmp[3] = src[3] * src[5];
+        tmp[4] = src[1] * src[6];
+        tmp[5] = src[2] * src[5];
+        tmp[6] = src[0] * src[7];
+        tmp[7] = src[3] * src[4];
+        tmp[8] = src[0] * src[6];
+        tmp[9] = src[2] * src[4];
+        tmp[10] = src[0] * src[5];
+        tmp[11] = src[1] * src[4];
+
+        // cofactorを計算する
+        dst[8] = tmp[0] * src[13] + tmp[3] * src[14] + tmp[4] * src[15];
+        dst[8] -= tmp[1] * src[13] + tmp[2] * src[14] + tmp[5] * src[15];
+        dst[9] = tmp[1] * src[12] + tmp[6] * src[14] + tmp[9] * src[15];
+        dst[9] -= tmp[0] * src[12] + tmp[7] * src[14] + tmp[8] * src[15];
+        dst[10] = tmp[2] * src[12] + tmp[7] * src[13] + tmp[10] * src[15];
+        dst[10] -= tmp[3] * src[12] + tmp[6] * src[13] + tmp[11] * src[15];
+        dst[11] = tmp[5] * src[12] + tmp[8] * src[13] + tmp[11] * src[14];
+        dst[11] -= tmp[4] * src[12] + tmp[9] * src[13] + tmp[10] * src[14];
+        dst[12] = tmp[2] * src[10] + tmp[5] * src[11] + tmp[1] * src[9];
+        dst[12] -= tmp[4] * src[11] + tmp[0] * src[9] + tmp[3] * src[10];
+        dst[13] = tmp[8] * src[11] + tmp[0] * src[8] + tmp[7] * src[10];
+        dst[13] -= tmp[6] * src[10] + tmp[9] * src[11] + tmp[1] * src[8];
+        dst[14] = tmp[6] * src[9] + tmp[11] * src[11] + tmp[3] * src[8];
+        dst[14] -= tmp[10] * src[11] + tmp[2] * src[8] + tmp[7] * src[9];
+        dst[15] = tmp[10] * src[10] + tmp[4] * src[8] + tmp[9] * src[9];
+        dst[15] -= tmp[8] * src[9] + tmp[11] * src[10] + tmp[5] * src[8];
+
+        det = 1 / det;
+        for (int j = 0; j < 16; j++)
+        {
+            dst[j] *= det;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                matrix[i][j] = dst[i * 4 + j];
+            }
+        }
+    }
+
+    Matrix4 GetInvert(const Matrix4& matrix, bool& invertSuccess) {
+        Matrix4 result = matrix;
+        Invert(result, invertSuccess);
+        return result;
+    }
+
+    bool IsOrthonormal(const Matrix4& matrix) {
+        Vector3 forward(matrix[0][0], matrix[0][1], matrix[0][2]);
+        Normalize(forward);
+        
+        Vector3 strafe(matrix[1][0], matrix[1][1], matrix[1][2]);
+        Normalize(strafe);
+        
+        Vector3 up(matrix[2][0], matrix[2][1], matrix[2][2]);
+        Normalize(up);
+
+        if (!IsNearZero(Dot(forward, strafe))) return false;
+        if (!IsNearZero(Dot(forward, up))) return false;
+        if (!IsNearZero(Dot(up, forward))) return false;
+
+        return true;
+    }
+
     #pragma endregion Matrix4
 
 

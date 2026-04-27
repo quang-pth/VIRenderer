@@ -65,15 +65,17 @@ namespace VIEngine::Math {
     // 行列の値へのポインタを取得する
     const float* GetValuePtr(const Matrix3& vector);
     // x,y方向のスケーリング行列を作成する
-    Matrix3 CreateScale(float x, float y);
+    Matrix3 CreateScale2D(float x, float y);
     // x,y方向の同一スケーリング行列を作成する
-    Matrix3 CreateScale(float k);
+    Matrix3 CreateScale2D(float k);
     // z軸回転行列を作成する
     Matrix3 CreateRotation(float theta);
     // 2D平行移動行列を作成する
     Matrix3 CreateTranslation(float x, float y);
     // 2D平行移動行列を作成する
     Matrix3 CreateTranslation(const Vector2& position);
+    // 行列が正規直交行列かどうかを判断する
+    bool IsOrthonormal(const Matrix3& matrix);
     #pragma endregion Matrix3
 
     #pragma region Matrix4
@@ -84,9 +86,9 @@ namespace VIEngine::Math {
     // 行列の値へのポインタを取得する
     const float* GetValuePtr(const Matrix4& vector);
     // x,y,z方向のスケーリング行列を作成する
-    Matrix4 CreateScale(float x, float y, float z);
+    Matrix4 CreateScale3D(float x, float y, float z);
     // x,y,z方向の同一スケーリング行列を作成する
-    Matrix4 CreateUScale(float k);
+    Matrix4 CreateScale3D(float k);
     // 回転軸と回転角から回転行列を作成する
     Matrix4 CreateRotation(float theta, const Vector3& axis);
     // クォータニオンから回転行列を作成する
@@ -107,6 +109,16 @@ namespace VIEngine::Math {
     Matrix4 CreateOrtho(float width, float height, float near, float far);
     // // 視野角（ラジアン）、アスペクト比、近面、遠面から透視投影行列を作成する
     Matrix4 CreatePerspective(float fieldOfView, float aspectRatio, float near, float far);
+    // 行列を反転する。反転可能な場合はinvertSuccessにtrueをセットし、反転不可能な場合はfalseをセットする。
+    // 反転不可能な場合、元の行列は変更されない。
+    // 単位行列の場合、元の行列は変更されない。invertSuccessはtrueになる。
+    void Invert(Matrix4& matrix, bool& invertSuccess);
+    // 行列の逆行列を返す。反転可能な場合はinvertSuccessにtrueをセットし、反転不可能な場合はfalseをセットする。
+    // 反転不可能な場合、元の行列を返す。
+    // 単位行列の場合、単位行列を返す。invertSuccessはtrueになる。
+    Matrix4 GetInvert(const Matrix4& matrix, bool& invertSuccess);
+    // 行列が正規直交行列かどうかを判断する
+    bool IsOrthonormal(const Matrix4& matrix);
     #pragma endregion Matrix4
 
     #pragma region Quaternion

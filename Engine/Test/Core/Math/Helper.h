@@ -25,6 +25,12 @@
     EXPECT_NEAR(v_engine.Y, v_glm.y, abs_error); \
     EXPECT_NEAR(v_engine.Z, v_glm.z, abs_error)
 
+#define EXPECT_VEC4_NEAR(v_engine, v_glm, abs_error) \
+    EXPECT_NEAR(v_engine.X, v_glm.x, abs_error); \
+    EXPECT_NEAR(v_engine.Y, v_glm.y, abs_error); \
+    EXPECT_NEAR(v_engine.Z, v_glm.z, abs_error); \
+    EXPECT_NEAR(v_engine.W, v_glm.w, abs_error)
+
 #define EXPECT_VEC3_EQ(v_eng, v_glm) \
     EXPECT_FLOAT_EQ(v_eng.X, v_glm.x); \
     EXPECT_FLOAT_EQ(v_eng.Y, v_glm.y); \

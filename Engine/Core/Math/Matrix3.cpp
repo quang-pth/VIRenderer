@@ -16,7 +16,7 @@ namespace VIEngine::Math {
     const Matrix3 Matrix3::Zero(&zero[0][0]);
 
     Matrix3::Matrix3() {
-        *this = Identity;
+        *this = Zero;
     }
 
     Matrix3 Matrix3::operator*(const Matrix3& other) {
