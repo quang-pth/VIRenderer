@@ -6,17 +6,22 @@
 namespace VIEngine {
 	class VI_API Layer {
 	public:
-		Layer() = default; 
+		Layer(); 
         virtual ~Layer() = default;
-		virtual void OnAttach() {}
-		virtual void OnUpdate() {}
-		virtual void OnDetach() {}
-		virtual bool OnKeyPressedEvent(const KeyPressedEvent& keyEvent) { return true; }
-        virtual bool OnKeyReleasedEvent(const KeyReleasedEvent& keyEvent) { return true; }
-        virtual bool OnMouseButtonPressedEvent(const MouseButtonPressedEvent& mouseEvent) { return true; }
-        virtual bool OnMouseButtonReleasedEvent(const MouseButtonReleasedEvent& mouseEvent) { return true; }
-        virtual bool OnMouseMovedEvent(const MouseMovedEvent& mouseEvent) { return true; }
-        virtual bool OnMouseScrolledEvent(const MouseScrolledEvent& mouseEvent) { return true; }
+		virtual void OnAttach();
+		virtual void OnUpdate(float deltaTime);
+		virtual void OnDetach();
+		virtual bool OnKeyPressedEvent(const KeyPressedEvent& keyEvent);
+        virtual bool OnKeyReleasedEvent(const KeyReleasedEvent& keyEvent);
+        virtual bool OnMouseButtonPressedEvent(const MouseButtonPressedEvent& mouseEvent);
+        virtual bool OnMouseButtonReleasedEvent(const MouseButtonReleasedEvent& mouseEvent);
+        virtual bool OnMouseMovedEvent(const MouseMovedEvent& mouseEvent);
+        virtual bool OnMouseScrolledEvent(const MouseScrolledEvent& mouseEvent);
+
+		VI_FORCE_INLINE float GetTimeScale() const { return mTimeScale; }
+		VI_FORCE_INLINE void SetTimeScale(float value) { mTimeScale = value; }
+	private:
+		float mTimeScale;
 	};
 
 }

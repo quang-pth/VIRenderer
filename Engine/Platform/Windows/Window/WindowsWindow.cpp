@@ -7,10 +7,6 @@
 namespace VIEngine {
     DEFINE_RTTI(WindowsWindow, Window::RunTimeType);
 
-    Window* Window::Create(uint16_t width, uint16_t height, const std::string& title) {
-        return new WindowsWindow(width, height, title);
-    }
-
     Window* Window::Create(const WindowConfiguration& windowConfig) {
         return new WindowsWindow(windowConfig);
     }

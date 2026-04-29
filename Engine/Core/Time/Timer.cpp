@@ -10,7 +10,7 @@ namespace VIEngine {
         
     }
 
-    float Timer::GetTotalTime() {
+    double Timer::GetTotalTime() {
         // 停止中の場合、停止した瞬間から現在までの経過時間はカウントしません。
         // また、以前に一時停止があった場合、(mStopTime - mBaseTime) には
         // その停止時間が含まれてしまうため、これをカウントから除外する必要があります。
@@ -19,7 +19,7 @@ namespace VIEngine {
         // ----*---------------*-----------------------*------------*------> 時間 (Time)
         //  mBaseTime       mStopTime             startTime    mCurrentTime
         if (mIsStopped) {
-            return std::chrono::duration<float>((mStopTime.time_since_epoch() - mPausedTime.time_since_epoch()) - mBaseTime.time_since_epoch()).count();
+            return std::chrono::duration<double>((mStopTime.time_since_epoch() - mPausedTime.time_since_epoch()) - mBaseTime.time_since_epoch()).count() / 1e+9;
         }
 
         // (mCurrTime - mBaseTime) には停止時間が含まれていますが、
@@ -31,7 +31,7 @@ namespace VIEngine {
         //                     |<-- 停止時間 (Paused Time) -->|
         // ----*---------------*-----------------*------------*------> 時間 (Time)
         //  mBaseTime       mStopTime       startTime     mCurrentTime
-        return std::chrono::duration<float>((mCurrentTime.time_since_epoch() - mPausedTime.time_since_epoch()) - mBaseTime.time_since_epoch()).count();
+        return std::chrono::duration<double>((mCurrentTime.time_since_epoch() - mPausedTime.time_since_epoch()) - mBaseTime.time_since_epoch()).count() / 1e+9;
     }
 
     void Timer::Reset() {
@@ -70,7 +70,7 @@ namespace VIEngine {
 
         mCurrentTime = Clock::now();
 
-        mDeltaTime = (mCurrentTime - mPreviousTime).count();
+        mDeltaTime = (mCurrentTime - mPreviousTime).count() / 1e+9;
         mPreviousTime = mCurrentTime;
 
         // 非負（0以上）であることを保証します。DXSDKのCDXUTTimeの記述によると、
@@ -79,5 +79,10 @@ namespace VIEngine {
         if(mDeltaTime < 0.0) {
             mDeltaTime = 0.0;
         }
+    }
+
+    void Timer::UpdateCurrentTime() {
+        mCurrentTime = Clock::now();
+        mDeltaTime = (mCurrentTime - mPreviousTime).count() / 1e+9;
     }
 }

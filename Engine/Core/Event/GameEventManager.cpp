@@ -8,7 +8,7 @@ namespace VIEngine {
     }
 
     GameEventManager::~GameEventManager() {
-
+        ClearEventListeners();
     }
 
     void GameEventManager::ExecuteEvent(const EventContext& eventContext) {
@@ -63,5 +63,13 @@ namespace VIEngine {
         else {
             CORE_LOG_WARN("Event name not found: {0}", eventName);
         }
+    }
+
+    void GameEventManager::ClearEventListeners() {
+        while (!mEventQueue.empty()) {
+            mEventQueue.pop();
+        }
+        mActionMap.clear();
+        mTotalListener = 0;
     }
 }

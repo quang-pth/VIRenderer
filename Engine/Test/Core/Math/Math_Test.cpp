@@ -149,6 +149,4 @@ namespace Test {
 
         EXPECT_VEC3_NEAR(clamped, gClamped, BASE_EPSILON);
     }
-
-
 }

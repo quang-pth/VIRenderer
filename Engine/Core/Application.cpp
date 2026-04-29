@@ -22,6 +22,9 @@ namespace VIEngine {
     }
 
     bool Application::Init() {
+        mTimer.Reset();
+        mTimer.Start();
+
         mInputEventManager.RegisterEventListener<KeyPressedEvent>(BIND_EVENT_FUNCTION(OnKeyPressedEvent));
         mInputEventManager.RegisterEventListener<KeyReleasedEvent>(BIND_EVENT_FUNCTION(OnKeyReleasedEvent));
         mInputEventManager.RegisterEventListener<MouseButtonPressedEvent>(BIND_EVENT_FUNCTION(OnMouseButtonPressedEvent));
@@ -50,15 +53,38 @@ namespace VIEngine {
 
         Input* input = Input::Get();
         while(mIsRunning) {
-            ++mFrameCount;
+            mTimer.Update();
+
+            float maxFPS = mWindow->GetMaxFPS();
+            float deltaTime = 1.0f / maxFPS;
+            // 最大FPSを超えるフレームレートにならないように、前回のフレームからの経過時間がdeltaTimeに達するまで待機する
+            while(mTimer.GetDeltaTime() < deltaTime) {
+                mTimer.UpdateCurrentTime();
+            }
+
             mWindow->Update();
             input->Update();
 
+            float currentDeltaTime = mTimer.GetDeltaTime();
+            // フレームレートが極端に低い場合の対策として、前回のフレームからの経過時間がウィンドウの最大許容デルタタイムを超える場合は、複数回に分けて更新処理を行う
+            while (currentDeltaTime > mWindow->GetMaxAllowedDeltaTime()) {
+                for (auto iter = mLayerStack.begin(); iter != mLayerStack.end(); ++iter) {
+                    Layer* layer = *iter;
+                    layer->OnUpdate(mWindow->GetMaxAllowedDeltaTime() * layer->GetTimeScale());
+                }
+                currentDeltaTime -= mWindow->GetMaxAllowedDeltaTime();
+            }
+            // 通常の更新処理
             for (auto iter = mLayerStack.begin(); iter != mLayerStack.end(); ++iter) {
-                (*iter)->OnUpdate();
+                Layer* layer = *iter;
+                layer->OnUpdate(currentDeltaTime * layer->GetTimeScale());
             }
 
             mGameEventManager.ProcessEvents();
+
+            // CORE_LOG_DEBUG("Frame {0}: {1}, FPS: {2}", mFrameCount, mTimer.GetDeltaTime(), 1.0f / mTimer.GetDeltaTime());
+
+            ++mFrameCount;
         }
 
         OnShutdownClient();
@@ -66,6 +92,8 @@ namespace VIEngine {
     
     void Application::Shutdown() {
         mWindow->Shutdown();
+        mInputEventManager.ClearEventListeners();
+        mGameEventManager.ClearEventListeners();
         CORE_LOG_INFO("Shutdown appplication");
     }
 

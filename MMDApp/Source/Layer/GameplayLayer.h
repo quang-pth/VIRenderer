@@ -9,7 +9,7 @@ namespace MMDApp {
 		~GameplayLayer();
 
 		virtual void OnAttach() override;
-		virtual void OnUpdate() override;
+		virtual void OnUpdate(float deltaTime) override;
 		virtual void OnDetach() override;
 		virtual bool OnKeyPressedEvent(const VIEngine::KeyPressedEvent& keyEvent) override;
 		virtual bool OnKeyReleasedEvent(const VIEngine::KeyReleasedEvent& keyEvent) override;

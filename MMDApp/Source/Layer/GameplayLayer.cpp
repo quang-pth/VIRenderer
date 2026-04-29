@@ -13,7 +13,7 @@ namespace MMDApp {
     void GameplayLayer::OnAttach() {
     }
 
-    void GameplayLayer::OnUpdate() {
+    void GameplayLayer::OnUpdate(float deltaTime) {
     }
 
     void GameplayLayer::OnDetach() {

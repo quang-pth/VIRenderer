@@ -6,6 +6,10 @@ namespace VIEngine {
     }
 
     InputEventManager::~InputEventManager() {
+        ClearEventListeners();
+    }
+
+    void InputEventManager::ClearEventListeners() {
         for (auto& pair : mActionMap) {
             for (auto iter : pair.second) {
                 VI_FREE_MEMORY(iter.second);

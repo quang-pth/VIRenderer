@@ -7,12 +7,12 @@ namespace MMDApp {
     public:
         TestingLayer();
         ~TestingLayer();
-		virtual void OnAttach() override;
-		virtual void OnUpdate() override;
-		virtual void OnDetach() override;
+        virtual void OnAttach() override;
+        virtual void OnUpdate(float deltaTime) override;
+        virtual void OnDetach() override;
     private:
-		void TestKeyboard();
-		void TestMouse();
-		void TestGamepad();
+        void TestKeyboard();
+        void TestMouse();
+        void TestGamepad();
     };
 }

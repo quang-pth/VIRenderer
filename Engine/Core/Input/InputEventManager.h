@@ -71,6 +71,8 @@ namespace VIEngine {
                 CORE_LOG_WARN("Event name not found: {0}", rtti.GetTypeName());
             }
         }
+
+        void ClearEventListeners();
     private:
         std::unordered_map<StringID, InputEventActionList> mActionMap;
         std::unordered_map<StringID, EventActionHandle> mTotalListenerMap;

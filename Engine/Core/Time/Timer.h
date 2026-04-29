@@ -13,7 +13,7 @@ namespace VIEngine {
         ~Timer();
         
         // Reset() が呼ばれてからの秒単位の経過時間の合計を返します。停止中の時間は含まれません。
-        float GetTotalTime();
+        double GetTotalTime();
         
         // 前回のフレームからの秒単位の経過時間を返します。
         VI_FORCE_INLINE double GetDeltaTime() { return mDeltaTime; }
@@ -22,6 +22,7 @@ namespace VIEngine {
         void Start();
         void Stop();
         void Update();
+        void UpdateCurrentTime();
     private:
         double mDeltaTime;
         TimePoint mBaseTime;

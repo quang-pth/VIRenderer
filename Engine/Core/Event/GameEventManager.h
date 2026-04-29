@@ -15,6 +15,7 @@ namespace VIEngine {
 
         EventActionHandle RegisterEventListener(const std::string& eventName, const EventAction<EventContext>& eventAction);
         void UnregisterEventListener(const std::string& eventName, EventActionHandle actionHandle);
+        void ClearEventListeners();
     private:
         std::priority_queue<EventContext> mEventQueue;
         std::unordered_map<StringID, EventActionList<EventContext>> mActionMap;

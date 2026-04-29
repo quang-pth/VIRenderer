@@ -15,7 +15,7 @@ namespace MMDApp {
         
     }
 
-    void TestingLayer::OnUpdate() {
+    void TestingLayer::OnUpdate(float deltaTime) {
         TestKeyboard();
         TestMouse();
         TestGamepad();
