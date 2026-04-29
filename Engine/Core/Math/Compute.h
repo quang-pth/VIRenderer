@@ -122,16 +122,20 @@ namespace VIEngine::Math {
     #pragma endregion Matrix4
 
     #pragma region Quaternion
-    // クォータニオンを反転する
+    // クォータニオンのコンジュゲートを取る。
+    void Conjugate(Quaternion& quaternion);
+    // クォータニオンを反転する。
     void Invert(Quaternion& quaternion);
-    // クォータニオンの反転を返す。XYZ成分は同じで、W成分が符号反転したクォータニオンになる
+    // クォータニオンのコンジュゲートを返す。
+    Quaternion GetConjugate(const Quaternion& quaternion);
+    // クォータニオンの反転を返す。
     Quaternion GetInvert(const Quaternion& quaternion);
     // クォータニオンq1からq2への回転を表すクォータニオンを返す
     Quaternion Difference(const Quaternion& q1, const Quaternion& q2);
-    // クォータニオンを球面線形補間する
-    Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
     // クォータニオンを線形補間する
     Quaternion Lerp(const Quaternion& q1, const Quaternion& q2, float t);
+    // 最短距離のクォータニオンを使用し、クォータニオンを球面線形補間する。
+    Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
     // クォータニオンを指数関数的に変化させる
     void Exponent(Quaternion& quaternion, float exp);
     // クォータニオンを指数関数的に変化させた新しいクォータニオンを返す
@@ -142,5 +146,7 @@ namespace VIEngine::Math {
     float Dot(const Quaternion& q1, const Quaternion& q2);
     // クォータニオンの値へのポインタを取得する
     const float* GetValuePtr(const Quaternion& quaternion);
+    // クォータニオンのXYZ成分を返す
+    Vector3 GetVector(const Quaternion& quaternion);
     #pragma endregion Quaternion
 }

@@ -35,6 +35,9 @@ namespace VIEngine::Math {
         
         ~Vector2() = default;
 
+        VI_FORCE_INLINE float& operator[](uint8_t index) { return Data[index]; }
+        VI_FORCE_INLINE float operator[](uint8_t index) const { return Data[index]; }
+
         bool operator==(const Vector2& other) const;
         bool operator!=(const Vector2& other) const;
         Vector2 operator+(const Vector2& other) const;

@@ -34,6 +34,10 @@ namespace VIEngine::Math {
         return *this;
     }
 
+    Quaternion Quaternion::operator-() const {
+        return Quaternion(-W, -X, -Y, -Z);
+    }
+
     Quaternion Quaternion::operator*(const Quaternion& other) const {
         Quaternion result;
         // q1 * q2 -> w = w1 * w2 - dot(v1, v2), xyz = w1 * v2 + w2 * v1 + cross(v1, v2)
@@ -55,6 +59,15 @@ namespace VIEngine::Math {
 
     Quaternion& Quaternion::operator*=(float scalar) {
         *this = *this * scalar;
+        return *this;
+    }
+
+    Quaternion Quaternion::operator/(float scalar) const {
+        return *this * (1.0f / scalar);
+    }
+
+    Quaternion& Quaternion::operator/=(float scalar) {
+        *this = *this * (1.0f / scalar);
         return *this;
     }
 

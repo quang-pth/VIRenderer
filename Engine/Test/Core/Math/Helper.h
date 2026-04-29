@@ -11,6 +11,7 @@
 #include"Core/Math/Vector4.h"
 #include"Core/Math/Matrix3.h"
 #include"Core/Math/Matrix4.h"
+#include"Core/Math/Quaternion.h"
 
 #define EXPECT_VEC2_EQ(v_eng, v_glm) \
     EXPECT_FLOAT_EQ(v_eng.X, v_glm.x); \
@@ -35,6 +36,12 @@
     EXPECT_FLOAT_EQ(v_eng.X, v_glm.x); \
     EXPECT_FLOAT_EQ(v_eng.Y, v_glm.y); \
     EXPECT_FLOAT_EQ(v_eng.Z, v_glm.Z)
+
+#define EXPECT_QUAT_EQ_NEAR(q_eng, q_glm, abs_error) \
+    EXPECT_NEAR(q_eng.W, q_glm.w, abs_error); \
+    EXPECT_NEAR(q_eng.X, q_glm.x, abs_error); \
+    EXPECT_NEAR(q_eng.Y, q_glm.y, abs_error); \
+    EXPECT_NEAR(q_eng.Z, q_glm.z, abs_error)
 
 namespace Test {
     constexpr float BASE_EPSILON = 1e-6f;

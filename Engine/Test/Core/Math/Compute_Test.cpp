@@ -1269,4 +1269,329 @@ namespace Test {
         EXPECT_FALSE(IsOrthonormal(nonOrthonormalMatrix));
     }
     #pragma endregion Matrix4MathTest
+
+    #pragma region QuaternionTest
+    TEST(QuaternionTest, Conjugate) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        Quaternion expected(q.W, -q.X, -q.Y, -q.Z);
+        Conjugate(q);
+        EXPECT_FLOAT_EQ(q.W, expected.W);
+        EXPECT_FLOAT_EQ(q.X, expected.X);
+        EXPECT_FLOAT_EQ(q.Y, expected.Y);
+        EXPECT_FLOAT_EQ(q.Z, expected.Z);
+    }
+
+    TEST(QuaternionTest, GetConjugate) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        Quaternion expected(q.W, -q.X, -q.Y, -q.Z);
+        Quaternion conjugated = GetConjugate(q);
+        EXPECT_FLOAT_EQ(conjugated.W, expected.W);
+        EXPECT_FLOAT_EQ(conjugated.X, expected.X);
+        EXPECT_FLOAT_EQ(conjugated.Y, expected.Y);
+        EXPECT_FLOAT_EQ(conjugated.Z, expected.Z);
+    }
+
+    TEST(QuaternionTest, Invert) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        glm::quat glmQuat = glm::quat(q.W, q.X, q.Y, q.Z);
+        Invert(q);
+        glm::quat invertedGlmQuat = glm::inverse(glmQuat);
+        EXPECT_QUAT_EQ_NEAR(q, invertedGlmQuat, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, GetInvert) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        Quaternion inverted = GetInvert(q);
+        glm::quat glmQuat = glm::quat(q.W, q.X, q.Y, q.Z);
+        glm::quat invertedGlmQuat = glm::inverse(glmQuat);
+        EXPECT_QUAT_EQ_NEAR(inverted, invertedGlmQuat, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, Difference) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Difference(q1, q2);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::inverse(glmQ1) * glmQ2;
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, Lerp) {
+        float t = 0.3f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Lerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::lerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, LerpMin) {
+        float t = 0.0f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Lerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::lerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, LerpCenter) {
+        float t = 0.5f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Lerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::lerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, LerpMax) {
+        float t = 1.0f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Lerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::lerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, Slerp) {
+        float t = 0.3f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Slerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::slerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, SlerpMin) {
+        float t = 0.0f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Slerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::slerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, SlerpCenter) {
+        float t = 0.5f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Slerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::slerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, SlerpMax) {
+        float t = 0.5f;
+
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        Quaternion result = Slerp(q1, q2, t);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        glm::quat expected = glm::slerp(glmQ1, glmQ2, t);
+
+        EXPECT_QUAT_EQ_NEAR(result, expected, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, Exponent) {
+        float angle = ToRadians(30.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+
+        float exp = 1.5f;
+        Exponent(q, exp);
+
+        // newAlpha = (angle / 2) * exp = 15.0 * 1.5 = 22.5
+        // newW = cos(newAlpha) = cos(22.5)
+        // newXYZ = xyz * sin(newAlpha) / sin(angle /)
+        Quaternion expected = Quaternion(Cos(ToRadians(22.5f)), axis.X * Sin(ToRadians(22.5f)), axis.Y * Sin(ToRadians(22.5f)), axis.Z * Sin(ToRadians(22.5f)));
+        EXPECT_NEAR(q.W, expected.W, BASE_EPSILON);
+        EXPECT_NEAR(q.X, expected.X, BASE_EPSILON);
+        EXPECT_NEAR(q.Y, expected.Y, BASE_EPSILON);
+        EXPECT_NEAR(q.Z, expected.Z, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, GetExponent) {
+        float angle = ToRadians(30.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+
+        float exp = 1.5f;
+        q = GetExponent(q, exp);
+
+        // newAlpha = (angle / 2) * exp = 15.0 * 1.5 = 22.5
+        // newW = cos(newAlpha) = cos(22.5)
+        // newXYZ = xyz * sin(newAlpha) / sin(angle /)
+        Quaternion expected = Quaternion(Cos(ToRadians(22.5f)), axis.X * Sin(ToRadians(22.5f)), axis.Y * Sin(ToRadians(22.5f)), axis.Z * Sin(ToRadians(22.5f)));
+        EXPECT_NEAR(q.W, expected.W, BASE_EPSILON);
+        EXPECT_NEAR(q.X, expected.X, BASE_EPSILON);
+        EXPECT_NEAR(q.Y, expected.Y, BASE_EPSILON);
+        EXPECT_NEAR(q.Z, expected.Z, BASE_EPSILON);
+    }
+
+    TEST(QuaternionTest, Dot) {
+        float angle = ToRadians(45.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q1(angle, axis);
+
+        float angle2 = ToRadians(90.0f);
+        Vector3 axis2(1.0f, 0.0f, 1.0f);
+        Normalize(axis2);
+        Quaternion q2(angle2, axis2);
+        float result = Dot(q1, q2);
+
+        glm::quat glmQ1 = glm::quat(q1.W, q1.X, q1.Y, q1.Z);
+        glm::quat glmQ2 = glm::quat(q2.W, q2.X, q2.Y, q2.Z);
+        float expected = glm::dot(glmQ1, glmQ2);
+        
+        EXPECT_FLOAT_EQ(result, expected);
+    }
+
+    TEST(QuaternionTest, IsIdentity) {
+        float angle = ToRadians(0.0f);
+        Vector3 axis(1.0f, 1.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        EXPECT_TRUE(IsIdentity(q));
+    }
+
+    TEST(QuaternionTest, GetValuePtr) {
+        float angle = ToRadians(60.0f);
+        Vector3 axis(1.0f, 2.0f, 0.5f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        const float* qPtr = GetValuePtr(q);
+        EXPECT_FLOAT_EQ(qPtr[0], Cos(angle / 2.0f));
+        EXPECT_FLOAT_EQ(qPtr[1], axis.X * Sin(angle / 2.0f));
+        EXPECT_FLOAT_EQ(qPtr[2], axis.Y * Sin(angle / 2.0f));
+        EXPECT_FLOAT_EQ(qPtr[3], axis.Z * Sin(angle / 2.0f));
+    }
+
+    TEST(QuaternionTest, GetVector) {
+        float angle = ToRadians(90.0f);
+        Vector3 axis(3.0f, 0.0f, 1.0f);
+        Normalize(axis);
+        Quaternion q(angle, axis);
+        Vector3 vector = GetVector(q);
+        EXPECT_FLOAT_EQ(vector.X, axis.X * Sin(angle / 2.0f));
+        EXPECT_FLOAT_EQ(vector.Y, axis.Y * Sin(angle / 2.0f));
+        EXPECT_FLOAT_EQ(vector.Z, axis.Z * Sin(angle / 2.0f));
+    }
+    #pragma endregion QuaternionTest
 }

@@ -495,48 +495,60 @@ namespace VIEngine::Math {
 
 
     #pragma region Quaternion
+    void Conjugate(Quaternion& quaternion) {
+        quaternion.X *= -1;
+        quaternion.Y *= -1;
+        quaternion.Z *= -1;
+    }
+    
     void Invert(Quaternion& quaternion) {
-        quaternion.W *= -1;
+        Conjugate(quaternion);
+        quaternion *= (1.0f / Dot(quaternion, quaternion));
+    }
+
+    Quaternion GetConjugate(const Quaternion& quaternion) {
+        return Quaternion(quaternion.W, -quaternion.X, -quaternion.Y, -quaternion.Z);
     }
 
     Quaternion GetInvert(const Quaternion& quaternion) {
-        return Quaternion(-quaternion.W, quaternion.X, quaternion.Y, quaternion.Z);
+        return GetConjugate(quaternion) * (1.0f / Dot(quaternion, quaternion));
     }
 
     Quaternion Difference(const Quaternion& q1, const Quaternion& q2) {
-        return q2 * GetInvert(q1);
-    }
-
-    Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t) {
-        // 公式：(sin(1 - t) * omega / sin(Omega)) * q0 + (sin(t * Omega) / sin(Omega)) * q1
-        float cosOmega = Dot(q1, q2);
-        // q1とq2が反対のクォータニオンであれば、q1を反転させて最短距離のクォータニオンを使用する
-        Quaternion negateQuat;
-        if (cosOmega < 0.0f) {
-            negateQuat = GetInvert(q1);
-            // 反転させたクォータニオンを使用するため、cosOmegaも反転させる
-            cosOmega = -cosOmega;
-        }
-        
-        // cosOmegaが1に近い場合、sin(Omega)が0に近くなり、計算が不安定になるため、線形補間を使用する
-        if (cosOmega > 0.9999f) return Lerp(q1, q2, t);
-
-        float sinOmega = Sqrtf(1.0f - cosOmega * cosOmega);
-        float omega = Atan2(sinOmega, cosOmega);
-        float oneOverOmega = 1.0f / omega;
-        float k0 = Sin(1.0f - t) * omega * oneOverOmega;
-        float k1 = Sin(t * omega) * oneOverOmega;
-        return k0 * q1 + k1 * q2;
+        return GetInvert(q1) * q2;
     }
 
     Quaternion Lerp(const Quaternion& q1, const Quaternion& q2, float t) {
         return q1 + (q2 - q1) * t;
     }
 
+    // https://gamemath.com/book/orient.html#quaternion_slerp
+    Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t) {
+        // 公式：(sin(1 - t) * omega / sin(Omega)) * q0 + (sin(t * Omega) / sin(Omega)) * q1
+        float cosAngle = Dot(q1, q2);
+        // q1とq2が反対のクォータニオンであれば、q1を反転させて最短距離のクォータニオンを使用する
+        Quaternion negateQ2 = q2;
+        if (cosAngle < 0.0f) {
+            negateQ2 = -negateQ2;
+            // 反転させたクォータニオンを使用するため、cosOmegaも反転させる
+            cosAngle = -cosAngle;
+        }
+        
+        // cosOmegaが1に近い場合、sin(Omega)が0に近くなり、計算が不安定になるため、線形補間を使用する
+        if (cosAngle > 1.0f - BASE_EPSILON) return Lerp(q1, negateQ2, t);
+
+        float sinAngle = Sqrtf(1.0f - cosAngle * cosAngle);
+        float angle = Atan2(sinAngle, cosAngle);
+        float oneOverSinAngle = 1.0f / sinAngle;
+        float k0 = Sin((1.0f - t) * angle) * oneOverSinAngle;
+        float k1 = Sin(t * angle) * oneOverSinAngle;
+        return k0 * q1 + k1 * negateQ2;
+    }
+
     void Exponent(Quaternion& quaternion, float exp) {
         // 単位クォータニオンの場合、回転がないため、指数関数的に変化させても同じクォータニオンになる
         if (!IsIdentity(quaternion)) {
-            float alpha = Acos(quaternion.W);
+            float alpha = Acos(quaternion.W); // alpha = angle / 2
             float newAlpha = alpha * exp;
             quaternion.W = Cos(newAlpha);
 
@@ -554,7 +566,10 @@ namespace VIEngine::Math {
     }
 
     bool IsIdentity(const Quaternion& quaternion) {
-        return quaternion.W > 0.9999f;
+        return quaternion.W > 1.0f - BASE_EPSILON && 
+            IsNearZero(quaternion.X) && 
+            IsNearZero(quaternion.Y) && 
+            IsNearZero(quaternion.Z);
     }
 
     float Dot(const Quaternion& q1, const Quaternion& q2) {
@@ -566,6 +581,7 @@ namespace VIEngine::Math {
         return result;
     }
 
-    const float* GetValuePtr(const Quaternion& quaternion) { return &quaternion.X; }
+    const float* GetValuePtr(const Quaternion& quaternion) { return &quaternion.Data[0]; }
+    Vector3 GetVector(const Quaternion& quaternion) { return Vector3{quaternion.X, quaternion.Y, quaternion.Z}; }
     #pragma endregion Quaternion
 }

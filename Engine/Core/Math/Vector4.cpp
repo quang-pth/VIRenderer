@@ -1,18 +1,25 @@
 #include"Core/Math/Vector4.h"
 #include"Core/Math/Math.h"
 #include"Core/Math/Matrix4.h"
+#include"Core/Math/Vector3.h"
+#include"Core/Math/Compute.h"
 
 namespace VIEngine::Math {
-    const Vector4 Vector4::Zero = {0.0f, 0.0f, 0.0f, 1.0f};
-    const Vector4 Vector4::UnitX = {1.0f, 0.0f, 0.0f, 1.0f};
-    const Vector4 Vector4::UnitY = {0.0f, 1.0f, 0.0f, 1.0f};
-    const Vector4 Vector4::UnitZ = {0.0f, 0.0f, 1.0f, 1.0f};
-    const Vector4 Vector4::NegUnitX = {-1.0f, 0.0f, 0.0f, 1.0f};
-    const Vector4 Vector4::NegUnitY = {0.0f, -1.0f, 0.0f, 1.0f};
-    const Vector4 Vector4::NegUnitZ = {0.0f, 0.0f, -1.0f, 1.0f};
+    const Vector4 Vector4::Zero = {0.0f, 0.0f, 0.0f, 0.0f};
+    const Vector4 Vector4::UnitX = {1.0f, 0.0f, 0.0f, 0.0f};
+    const Vector4 Vector4::UnitY = {0.0f, 1.0f, 0.0f, 0.0f};
+    const Vector4 Vector4::UnitZ = {0.0f, 0.0f, 1.0f, 0.0f};
+    const Vector4 Vector4::NegUnitX = {-1.0f, 0.0f, 0.0f, 0.0f};
+    const Vector4 Vector4::NegUnitY = {0.0f, -1.0f, 0.0f, 0.0f};
+    const Vector4 Vector4::NegUnitZ = {0.0f, 0.0f, -1.0f, 0.0f};
 
     Vector4::Vector4() {
         *this = Vector4::Zero;
+    }
+
+    Vector4::Vector4(const Vector3& vector3, float w) {
+        memcpy(&Data[0], GetValuePtr(vector3), sizeof(float) * 3);
+        W = w;
     }
 
     bool Vector4::operator==(const Vector4& other) const {

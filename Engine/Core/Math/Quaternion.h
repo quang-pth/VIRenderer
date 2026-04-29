@@ -31,16 +31,20 @@ namespace VIEngine::Math {
             memcpy(&Data[0], data, sizeof(float) * 4);
         }
 
+        VI_FORCE_INLINE float& operator[](uint8_t index) { return Data[index]; }
         VI_FORCE_INLINE float operator[](uint8_t index) const { return Data[index]; }
 
         Quaternion operator+(const Quaternion& other) const;
         Quaternion& operator+=(const Quaternion& other);
         Quaternion operator-(const Quaternion& other) const;
         Quaternion& operator-=(const Quaternion& other);
+        Quaternion operator-() const;
         Quaternion operator*(const Quaternion& other) const;
         Quaternion& operator*=(const Quaternion& other);
         Quaternion operator*(float scalar) const;
         Quaternion& operator*=(float scalar);
+        Quaternion operator/(float scalar) const;
+        Quaternion& operator/=(float scalar);
     };
 
     Quaternion operator*(float scalar, const Quaternion& Quaternion);

@@ -3,6 +3,19 @@
 namespace Test {
     using namespace VIEngine::Math;
 
+    TEST(Vector3Test, Indexing) {
+        Vector3 v;
+        v.X = 1.0f;
+        v.Y = 2.0f;
+        v.Z = 3.0f;
+        v[0] += 1.0f;
+        v[1] += 1.0f;
+        v[2] += 1.0f;
+        EXPECT_FLOAT_EQ(v.X, 2.0f);
+        EXPECT_FLOAT_EQ(v.Y, 3.0f);
+        EXPECT_FLOAT_EQ(v.Z, 4.0f);
+    }
+
     TEST(Vector3Test, BasicArithmeticAgainstGLM) {
         Vector3 v1(10.5f, -2.0f, 3.0f);
         Vector3 v2(3.0f, 4.5f, -5.5f);

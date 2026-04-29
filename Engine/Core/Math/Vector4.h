@@ -4,6 +4,7 @@
 
 namespace VIEngine::Math {
     class Matrix4;
+    class Vector3;
 
     class VI_API Vector4 {
     public:
@@ -39,16 +40,17 @@ namespace VIEngine::Math {
         Vector4(Vector4&&) = default;
         Vector4& operator=(Vector4&&) = default;
         
+        Vector4(const Vector3& vector3, float w = 1.0f);
         constexpr Vector4(float x, float y, float z, float w = 1.0f) noexcept : X(x), Y(y), Z(z), W(w) {}
-        constexpr Vector4(float value) noexcept : X(value), Y(value), Z(value), W(value) {}
+        constexpr Vector4(float xyz, float w = 1.0f) noexcept : X(xyz), Y(xyz), Z(xyz), W(w) {}
         explicit Vector4(IN_SIZE(4) const float* values) noexcept {
             memcpy(&Data[0], values, sizeof(float) * 4);
         }
         
         ~Vector4() = default;
         
-        float& operator[](uint8_t index) { return Data[index]; }
-        float operator[](uint8_t index) const { return Data[index]; }
+        VI_FORCE_INLINE float& operator[](uint8_t index) { return Data[index]; }
+        VI_FORCE_INLINE float operator[](uint8_t index) const { return Data[index]; }
 
         bool operator==(const Vector4& other) const;
         bool operator!=(const Vector4& other) const;

@@ -44,6 +44,9 @@ namespace VIEngine::Math {
         }
         ~Vector3() = default;
 
+        VI_FORCE_INLINE float& operator[](uint8_t index) { return Data[index]; }
+        VI_FORCE_INLINE float operator[](uint8_t index) const { return Data[index]; }
+
         bool operator==(const Vector3& other) const;
         bool operator!=(const Vector3& other) const;
         Vector3 operator+(const Vector3& other) const;
