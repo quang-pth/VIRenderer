@@ -6,6 +6,7 @@
 #include"Core/Layer/LayerStack.h"
 #include"Core/Input/InputEvent.h"
 #include"Core/Input/InputEventManager.h"
+#include"Core/Renderer/Renderer.h"
 
 namespace VIEngine {
     struct VI_API ApplicationConfiguration {
@@ -27,6 +28,10 @@ namespace VIEngine {
         VI_FORCE_INLINE GameEventManager& GetGameEventManager() { return mGameEventManager; }
         VI_FORCE_INLINE InputEventManager& GetInputEventManager() { return mInputEventManager; }
         VI_FORCE_INLINE size_t GetFrameCount() const { return mFrameCount; }
+        VI_FORCE_INLINE Renderer* GetRenderer() { return &mRenderer; }
+        VI_FORCE_INLINE bool GetIsCatchUpPhase() const { return mIsCatchUpPhase; }
+
+        template<typename T> const T* GetPlatformWindow() const { return reinterpret_cast<T*>(mWindow.get()); }
 
         virtual void OnInitClient() = 0;
         virtual void OnShutdownClient() = 0;
@@ -52,6 +57,8 @@ namespace VIEngine {
         GameEventManager mGameEventManager;
         InputEventManager mInputEventManager;
         LayerStack mLayerStack;
+        Renderer mRenderer;
+        bool mIsCatchUpPhase;
     };
 
     extern Application* CreateApplication();

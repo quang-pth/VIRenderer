@@ -2,7 +2,12 @@
 
 #include<Core/Layer/Layer.h>
 
+namespace VIEngine {
+	class RenderCommand;
+}
+
 namespace MMDApp {
+
 	class GameplayLayer : public VIEngine::Layer {
 	public:
 		GameplayLayer();
@@ -17,5 +22,7 @@ namespace MMDApp {
 		virtual bool OnMouseButtonReleasedEvent(const VIEngine::MouseButtonReleasedEvent& mouseEvent) override;
 		virtual bool OnMouseMovedEvent(const VIEngine::MouseMovedEvent& mouseEvent) override;
 		virtual bool OnMouseScrolledEvent(const VIEngine::MouseScrolledEvent& mouseEvent) override;
+	private:
+		VIEngine::RenderCommand* mRenderCommand;
 	};
 }

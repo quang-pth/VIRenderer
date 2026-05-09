@@ -30,6 +30,6 @@ VIEngine::Application* VIEngine::CreateApplication() {
     VIEngine::ApplicationConfiguration appConfig = {};
     appConfig.WindowConfig.Width = 640;
     appConfig.WindowConfig.Height = 360;
-    appConfig.WindowConfig.Title = "MMD Application";
+    appConfig.WindowConfig.Title = _T("MMD Application");
     return new MMDApp::MMDApp(appConfig);
 }

@@ -52,7 +52,7 @@ namespace VIEngine {
         static uint8_t GetTransistionState(LPARAM lparam);
     public:
         WindowsWindow() = default;
-        WindowsWindow(uint16_t width, uint16_t height, const std::string& title);
+        WindowsWindow(uint16_t width, uint16_t height, const std::wstring& title);
         WindowsWindow(const WindowConfiguration& windowConfig);
         virtual bool Init() override;
         virtual void Update() override;
@@ -61,10 +61,12 @@ namespace VIEngine {
         VI_FORCE_INLINE WindowsMouseState& GetMouseState() { return mMouseState; }
         VI_FORCE_INLINE bool GetIsFirstMouse() const { return mIsFirstMouse; }
         VI_FORCE_INLINE void SetIsFirstMouse(bool value) { mIsFirstMouse = value; }
+        VI_FORCE_INLINE HWND GetHWND() const { return mHWND; }
     private:
         HWND mHWND;
         MSG mMessage;
         WindowsMouseState mMouseState;
         bool mIsFirstMouse;
+        WNDCLASSEX mWindowClass;
     };
 }

@@ -5,7 +5,7 @@
 
 class TestApplication : public VIEngine::Application {
 public:
-    TestApplication() : VIEngine::Application() {}
+    TestApplication(const VIEngine::ApplicationConfiguration& appConfig) : VIEngine::Application(appConfig) {}
     ~TestApplication() {}
     virtual bool Init() override { return true; }
     virtual void Run() override {}
@@ -15,7 +15,11 @@ public:
 };
 
 VIEngine::Application* VIEngine::CreateApplication() {
-    return new TestApplication();
+    VIEngine::ApplicationConfiguration appConfig = {};
+    appConfig.WindowConfig.Width = 640;
+    appConfig.WindowConfig.Height = 360;
+    appConfig.WindowConfig.Title = _T("Test Application");
+    return new TestApplication(appConfig);
 }
 
 int main() {

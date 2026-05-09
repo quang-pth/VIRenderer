@@ -8,31 +8,31 @@ namespace VIEngine {
     DEFINE_RTTI(WindowsWindow, Window::RunTimeType);
 
     Window* Window::Create(const WindowConfiguration& windowConfig) {
+        // TODO: Allocate with memory management system
         return new WindowsWindow(windowConfig);
     }
 
-    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::string& title) : 
-        Window(width, height, title), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true)
+    WindowsWindow::WindowsWindow(uint16_t width, uint16_t height, const std::wstring& title) : 
+        Window(width, height, title), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true), mWindowClass({})
     {
     }
 
     WindowsWindow::WindowsWindow(const WindowConfiguration& windowConfig) : 
-        Window(windowConfig), mHWND(), mMessage()  
+        Window(windowConfig), mHWND(), mMessage(), mMouseState(), mIsFirstMouse(true), mWindowClass({})
     {
     }
 
     bool WindowsWindow::Init() {
         CORE_LOG_TRACE("Init WindowsWindow");
 
-        WNDCLASSEX w = {};
-        w.style = CS_HREDRAW | CS_VREDRAW;
-        w.cbSize = sizeof(WNDCLASSEX);
-        w.lpfnWndProc = (WNDPROC)WindowsWindow::WindowProcedure;
-        w.lpszClassName = _T("WindowsWindow");
-        w.hInstance = GetModuleHandleA(NULL);
-        w.hCursor = LoadCursor(NULL, IDC_ARROW);
+        mWindowClass.style = CS_HREDRAW | CS_VREDRAW;
+        mWindowClass.cbSize = sizeof(WNDCLASSEX);
+        mWindowClass.lpfnWndProc = (WNDPROC)WindowsWindow::WindowProcedure;
+        mWindowClass.lpszClassName = _T("WindowsWindow");
+        mWindowClass.hInstance = GetModuleHandleA(NULL);
+        mWindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 
-        if (!RegisterClassEx(&w)) {
+        if (!RegisterClassEx(&mWindowClass)) {
             CORE_LOG_ERROR("Failed to register window class");
             return false;
         }
@@ -40,9 +40,10 @@ namespace VIEngine {
         RECT wrc = { 0, 0, mConfiguration.Width, mConfiguration.Height };
         AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, FALSE);
         
-        mHWND = CreateWindow(
-            w.lpszClassName, 
-            (mConfiguration.Title.c_str()),
+        mHWND = CreateWindowExW(
+            0,
+            mWindowClass.lpszClassName, 
+            mConfiguration.Title.c_str(),
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
@@ -50,7 +51,7 @@ namespace VIEngine {
             wrc.bottom - wrc.top,
             NULL,
             NULL,
-            w.hInstance,
+            mWindowClass.hInstance,
             this 
         );
 
@@ -82,6 +83,7 @@ namespace VIEngine {
     }
 
     void WindowsWindow::Close() {
+        UnregisterClass(mWindowClass.lpszClassName, mWindowClass.hInstance);
         DestroyWindow(mHWND);
     }
     

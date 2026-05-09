@@ -23,6 +23,6 @@ if not exist build\%BUILD_TYPE% echo "build\%BUILD_TYPE% folder is not found" ex
 if not exist build\%BUILD_TYPE%\%ARCH% echo "build\%BUILD_TYPE%\%ARCH% folder is not found" exit /b 1
 if not exist build\%BUILD_TYPE%\%ARCH%\%PROJECT_NAME% echo "build\%BUILD_TYPE%\%ARCH%\%PROJECT_NAME% folder is not found" exit /b 1
 
-cd build/%BUILD_TYPE%/%ARCH%/%PROJECT_NAME% && ctest -C %BUILD_TYPE% --output-on-failure
+cd build/%BUILD_TYPE%/%ARCH%/%PROJECT_NAME%/Test && ctest -C %BUILD_TYPE% --output-on-failure
 
 echo Testing finished!

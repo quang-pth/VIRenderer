@@ -12,7 +12,7 @@
                 "${workspaceFolder}/Engine",
                 "${workspaceFolder}/MMDApp/Source"
             ],
-            "defines": ["_DEBUG"],
+            "defines": ["_DEBUG", "_UNICODE", "UNICODE"],
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "${default}"

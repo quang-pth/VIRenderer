@@ -1,6 +1,9 @@
 #include"Layer/GameplayLayer.h"
 #include<Core/Input/InputEvent.h>
 #include<Core/Logger/Logger.h>
+#include<Core/Application.h>
+#include<Core/Math/Math.h>
+#include<Core/Renderer/RenderCommand.h>
 
 namespace MMDApp {
     GameplayLayer::GameplayLayer() {
@@ -11,9 +14,33 @@ namespace MMDApp {
     }
 
     void GameplayLayer::OnAttach() {
+        mRenderCommand = VIEngine::RenderCommand::Create(VIEngine::ERenderCommandType::MAIN);
+        // mQuad = CreateQuad()
+
+        // CreateQuad() {
+        // Shader shader = CreateShader("quad.fs", "quad.ps")
+        // VertexFormat vertexFormat;
+        // vertexFormat.AddAttribute("POSITION", EAttributeFormat::FLOAT3)
+        // vertexFormat.AddAttribute("COLOR", EAttributeFormat::FLOAT3)
+        // vertexFormat.AddAttribute("TEXCOORD", EAttributeFormat::FLOAT2)
+        // float vertices[] = {...}; 
+        // VertexBuffer vertexBuffer = CreateVertexBuffer(vertexFormat, vertices, sizeof(vertices));
+        // float indices[] = {...};
+        // IndexBuffer indexBuffer = CreateIndexBuffer(indices, sizeof(indices));
+        // return CreateVisual(vertexBuffer, indexBuffer, shader);
+        // }
     }
 
     void GameplayLayer::OnUpdate(float deltaTime) {
+        static float total = 0.0f;
+        total += deltaTime;
+        using namespace VIEngine;
+        mRenderCommand->BeginRecord();
+        mRenderCommand->SetRenderTarget();
+        mRenderCommand->SetBackBufferRender();
+        mRenderCommand->ClearColor(Math::Sin(total), Math::Cos(total), 0.0f);
+        mRenderCommand->SetBackBufferPresent();
+        mRenderCommand->EndRecord();
     }
 
     void GameplayLayer::OnDetach() {

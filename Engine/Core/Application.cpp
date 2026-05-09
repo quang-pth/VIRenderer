@@ -16,7 +16,7 @@ namespace VIEngine {
     }
 
     Application::Application(const ApplicationConfiguration& appConfig) : mAppConfig(appConfig), mIsRunning(true), 
-        mFrameCount(0), mTimer(), mGameEventManager(), mInputEventManager(), mLayerStack()
+        mFrameCount(0), mTimer(), mGameEventManager(), mInputEventManager(), mLayerStack(), mRenderer(), mIsCatchUpPhase(false)
     {
         sInstance = this;
     }
@@ -39,6 +39,11 @@ namespace VIEngine {
 
         if (!mWindow->Init()) {
             CORE_LOG_CRITICAL("Failed to init application window");
+            return false;
+        }
+
+        if (!mRenderer.Init(this)) {
+            CORE_LOG_CRITICAL("Failed to init renderer");
             return false;
         }
 
@@ -67,6 +72,7 @@ namespace VIEngine {
 
             float currentDeltaTime = mTimer.GetDeltaTime();
             // フレームレートが極端に低い場合の対策として、前回のフレームからの経過時間がウィンドウの最大許容デルタタイムを超える場合は、複数回に分けて更新処理を行う
+            mIsCatchUpPhase = true;
             while (currentDeltaTime > mWindow->GetMaxAllowedDeltaTime()) {
                 for (auto iter = mLayerStack.begin(); iter != mLayerStack.end(); ++iter) {
                     Layer* layer = *iter;
@@ -74,6 +80,7 @@ namespace VIEngine {
                 }
                 currentDeltaTime -= mWindow->GetMaxAllowedDeltaTime();
             }
+            mIsCatchUpPhase = false;
             // 通常の更新処理
             for (auto iter = mLayerStack.begin(); iter != mLayerStack.end(); ++iter) {
                 Layer* layer = *iter;
@@ -81,6 +88,12 @@ namespace VIEngine {
             }
 
             mGameEventManager.ProcessEvents();
+
+            if (mRenderer.BeginScene()) {
+                mRenderer.WaitAndProcess();
+                mRenderer.Present();
+                mRenderer.EndScene();
+            }
 
             // CORE_LOG_DEBUG("Frame {0}: {1}, FPS: {2}", mFrameCount, mTimer.GetDeltaTime(), 1.0f / mTimer.GetDeltaTime());
 
