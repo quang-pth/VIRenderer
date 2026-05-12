@@ -7,6 +7,7 @@ namespace VIEngine {
     class RendererContext;
 
     class VI_API Swapchain {
+        DECLARE_RTTI
     public:
         static Swapchain* Create(RendererContext* rendererContext, const SwapchainAttribute& attribute);
     public:

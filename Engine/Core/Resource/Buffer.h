@@ -6,6 +6,8 @@ namespace VIEngine {
     class VI_API Buffer {
         DECLARE_RTTI
     public:
+        static Buffer* Create(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset = 0);
+    public:
         Buffer() = default;
         explicit Buffer(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset = 0) noexcept : mData(data), mSize(sizeBytes), mCount(count), mOffset(offset) {}
         virtual ~Buffer() = default;

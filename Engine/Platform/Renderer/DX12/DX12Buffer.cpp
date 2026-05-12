@@ -1,10 +1,19 @@
-#include"Platform/Renderer/DX12/DX12VertexBuffer.h"
+#include"Platform/Renderer/DX12/DX12Buffer.h"
 #include"Platform/Renderer/DX12/DX12RendererContext.h"
 #include"Platform/Renderer/DX12/DX12Helper.h"
+#include"Core/Resource/Buffer.h"
+#include"Core/Application.h"
 
 namespace VIEngine {
-    DX12VertexBuffer::DX12VertexBuffer(RendererContext* rendererContext, VertexBuffer* cpuBuffer, EBufferUsage usage) 
-        : GPUVertexBuffer(cpuBuffer, usage), mResource(), mBufferView() 
+    DEFINE_RTTI(DX12Buffer, Buffer::RunTimeType)
+
+    GPUBuffer* GPUBuffer::Create(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset, EBufferUsage usage) {
+        // TODO: Allocate with memory mangement system
+        return new DX12Buffer(Application::Get().GetRenderer()->GetContext(), Buffer::Create(data, sizeBytes, count, offset), usage);
+    }
+
+    DX12Buffer::DX12Buffer(RendererContext* rendererContext, Buffer* cpuBuffer, EBufferUsage usage) 
+        : GPUBuffer(cpuBuffer, usage), mResource()
     {
         mRendererContext = static_cast<DX12RendererContext*>(rendererContext);
 
@@ -43,9 +52,5 @@ namespace VIEngine {
         mResource->Map(0, nullptr, (void**)&resourceAddress);
         memcpy(resourceAddress, mCPUBuffer->GetData(), mCPUBuffer->GetSize());
         mResource->Unmap(0, nullptr);
-
-        mBufferView.BufferLocation = mResource->GetGPUVirtualAddress();
-        mBufferView.SizeInBytes = mCPUBuffer->GetSize();
-        mBufferView.StrideInBytes = mCPUBuffer->GetLayout().GetSize();
     }
 }

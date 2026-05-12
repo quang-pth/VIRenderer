@@ -135,4 +135,13 @@ namespace VIEngine {
     bool HasSwapchainFlag(ESwapchainFlag flags, ESwapchainFlag target) {
         return (flags & target) == target;
     }
+
+    D3D12_INPUT_CLASSIFICATION EngineToDX12InputType(EInputType type) {
+        switch (type)
+        {
+            case EInputType::VERTEX:         return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+            case EInputType::INSTANCE:       return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+            default:                         VI_ASSERT("Unknown input type");
+        }
+    }
 }

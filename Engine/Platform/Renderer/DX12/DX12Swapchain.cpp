@@ -4,6 +4,8 @@
 #include"Core/Application.h"
 
 namespace VIEngine {
+    DEFINE_RTTI(DX12Swapchain, Swapchain::RunTimeType)
+
     Swapchain* Swapchain::Create(RendererContext* rendererContext, const SwapchainAttribute& attribute) {
         // TODO: Allocate from memory management
         return new DX12Swapchain(rendererContext, attribute);

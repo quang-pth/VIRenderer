@@ -3,7 +3,7 @@
 namespace VIEngine {
     DEFINE_RTTI_NO_PARENT(VertexAttribute)
 
-    uint64_t VertexAttribute::GetTypeSize(EFormat attributeType) {
+    uint64_t VertexAttribute::GetFormatSize(EFormat attributeType) {
         switch (attributeType)
         {
             case EFormat::FLOAT:       return sizeof(float);

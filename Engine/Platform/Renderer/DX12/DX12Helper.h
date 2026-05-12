@@ -37,4 +37,5 @@ namespace VIEngine {
     DXGI_ALPHA_MODE EngineToDX12AlphaMode(EAlphaMode mode);
     UINT EngineToDX12SwapchainFlags(ESwapchainFlag flags);
     bool HasSwapchainFlag(ESwapchainFlag flags, ESwapchainFlag target);
+    D3D12_INPUT_CLASSIFICATION EngineToDX12InputType(EInputType type);
 }

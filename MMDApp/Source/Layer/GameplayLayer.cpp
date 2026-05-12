@@ -4,31 +4,29 @@
 #include<Core/Application.h>
 #include<Core/Math/Math.h>
 #include<Core/Renderer/RenderCommand.h>
+#include<Core/Renderer/GPUBuffer.h>
+#include<Core/Renderer/InputAssembler.h>
 
 namespace MMDApp {
     GameplayLayer::GameplayLayer() {
     }
 
     GameplayLayer::~GameplayLayer() {
-
     }
 
     void GameplayLayer::OnAttach() {
-        mRenderCommand = VIEngine::RenderCommand::Create(VIEngine::ERenderCommandType::MAIN);
-        // mQuad = CreateQuad()
+        using namespace VIEngine;
 
-        // CreateQuad() {
-        // Shader shader = CreateShader("quad.fs", "quad.ps")
-        // VertexFormat vertexFormat;
-        // vertexFormat.AddAttribute("POSITION", EAttributeFormat::FLOAT3)
-        // vertexFormat.AddAttribute("COLOR", EAttributeFormat::FLOAT3)
-        // vertexFormat.AddAttribute("TEXCOORD", EAttributeFormat::FLOAT2)
-        // float vertices[] = {...}; 
-        // VertexBuffer vertexBuffer = CreateVertexBuffer(vertexFormat, vertices, sizeof(vertices));
-        // float indices[] = {...};
-        // IndexBuffer indexBuffer = CreateIndexBuffer(indices, sizeof(indices));
-        // return CreateVisual(vertexBuffer, indexBuffer, shader);
-        // }
+        mRenderCommand = RenderCommand::Create(VIEngine::ERenderCommandType::MAIN);
+
+        GPUBuffer* vertexBuffer = GPUBuffer::Create(nullptr, 0, 0, 0);
+        GPUBuffer* indexBuffer = GPUBuffer::Create(nullptr, 0, 0, 0);
+        InputAssembler* inputAssembler = InputAssembler::Create({{vertexBuffer}, indexBuffer, {
+            VertexAttribute{"POSITION", 0, EFormat::FLOAT3, 0, EInputType::VERTEX},
+            VertexAttribute{"TEXCOORD", 0, EFormat::FLOAT2, 0, EInputType::VERTEX},
+        }});
+        // shader = CreateShader()
+        // pipelineState = CreatePipelineState(shader, {attribute})
     }
 
     void GameplayLayer::OnUpdate(float deltaTime) {
@@ -44,7 +42,7 @@ namespace MMDApp {
     }
 
     void GameplayLayer::OnDetach() {
-
+        VI_FREE_MEMORY(mRenderCommand);
     }
 
     bool GameplayLayer::OnKeyPressedEvent(const VIEngine::KeyPressedEvent& keyEvent) {
