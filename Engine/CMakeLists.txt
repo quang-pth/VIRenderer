@@ -40,7 +40,7 @@ if (WIN32)
 endif()
 
 file(GLOB_RECURSE VERTEX_SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/*.vs.hlsl CMAKE_CONFIGURE_DEPENDS)
-set(VS_HLSL_ENTRY_POINT "BasicVS")
+set(VS_HLSL_ENTRY_POINT "MainVS")
 set_source_files_properties(
     ${VERTEX_SHADERS} PROPERTIES
     VS_TOOL_OVERRIDE "HLSLCompiler"
@@ -49,7 +49,7 @@ set_source_files_properties(
     VS_SHADER_ENTRYPOINT ${VS_HLSL_ENTRY_POINT}
 )
 
-set(PS_HLSL_ENTRY_POINT "BasicPS")
+set(PS_HLSL_ENTRY_POINT "MainPS")
 file(GLOB_RECURSE PIXEL_SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Shader/*.ps.hlsl CMAKE_CONFIGURE_DEPENDS)
 set_source_files_properties(
     ${PIXEL_SHADERS} PROPERTIES

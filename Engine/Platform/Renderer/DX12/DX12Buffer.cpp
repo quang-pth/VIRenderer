@@ -9,11 +9,11 @@ namespace VIEngine {
 
     GPUBuffer* GPUBuffer::Create(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset, EBufferUsage usage) {
         // TODO: Allocate with memory mangement system
-        return new DX12Buffer(Application::Get().GetRenderer()->GetContext(), Buffer::Create(data, sizeBytes, count, offset), usage);
+        return new DX12Buffer(Application::Get().GetRenderer()->GetContext(), Buffer::Create(data, sizeBytes), count, offset, usage);
     }
 
-    DX12Buffer::DX12Buffer(RendererContext* rendererContext, Buffer* cpuBuffer, EBufferUsage usage) 
-        : GPUBuffer(cpuBuffer, usage), mResource()
+    DX12Buffer::DX12Buffer(RendererContext* rendererContext, Buffer* cpuBuffer, uint64_t count, uint64_t offset, EBufferUsage usage) 
+        : GPUBuffer(cpuBuffer, count, offset, usage), mResource()
     {
         mRendererContext = static_cast<DX12RendererContext*>(rendererContext);
 

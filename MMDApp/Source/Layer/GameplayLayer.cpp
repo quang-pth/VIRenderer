@@ -6,6 +6,7 @@
 #include<Core/Renderer/RenderCommand.h>
 #include<Core/Renderer/GPUBuffer.h>
 #include<Core/Renderer/InputAssembler.h>
+#include<Core/Renderer/Shader.h>
 
 namespace MMDApp {
     GameplayLayer::GameplayLayer() {
@@ -25,6 +26,11 @@ namespace MMDApp {
             VertexAttribute{"POSITION", 0, EFormat::FLOAT3, 0, EInputType::VERTEX},
             VertexAttribute{"TEXCOORD", 0, EFormat::FLOAT2, 0, EInputType::VERTEX},
         }});
+
+        ShaderAttribute shaderAttribute = {};
+        shaderAttribute.Stages.emplace_back(ShaderStage{EShaderStageFlag::VERTEX, "Assets/Shader/quad.vs.hlsl"});
+        shaderAttribute.Stages.emplace_back(ShaderStage{EShaderStageFlag::PIXEL, "Assets/Shader/quad.ps.hlsl"});
+        Shader* quadDefaultShader = Shader::Create(shaderAttribute);
         // shader = CreateShader()
         // pipelineState = CreatePipelineState(shader, {attribute})
     }

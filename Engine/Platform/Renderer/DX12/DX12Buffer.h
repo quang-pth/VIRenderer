@@ -8,7 +8,7 @@ namespace VIEngine {
         DECLARE_RTTI
     public:
         DX12Buffer() = default;
-        DX12Buffer(RendererContext* rendererContext, Buffer* cpuBuffer, EBufferUsage usage = EBufferUsage::STATIC);
+        DX12Buffer(RendererContext* rendererContext, Buffer* cpuBuffer, uint64_t count, uint64_t offset, EBufferUsage usage = EBufferUsage::STATIC);
         ~DX12Buffer() = default;
         VI_FORCE_INLINE ID3D12Resource* GetResource() const { return mResource.Get(); }
     private:

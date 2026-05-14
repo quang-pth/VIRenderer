@@ -2,6 +2,7 @@
 #include"Platform/Renderer/DX12/DX12Helper.h"
 #include"Platform/Renderer/DX12/DX12RenderCommandQueue.h"
 #include"Platform/Renderer/DX12/DX12Swapchain.h"
+#include"Platform/Renderer/DX12/DX12ShaderCompiler.h"
 #include"Platform/Windows/Window/WindowsWindow.h"
 #include"Core/Renderer/Renderer.h"
 #include"Core/Logger/Logger.h"
@@ -19,12 +20,14 @@ namespace VIEngine {
     DX12RendererContext::DX12RendererContext(Application* app) 
         : RendererContext(app), mBackBuffers(mBackBufferCount)
     {
-
+        
     }
 
     DX12RendererContext::~DX12RendererContext() {
         VI_FREE_MEMORY(mRenderCommandQueue);
         VI_FREE_MEMORY(mSwapchain);
+        VI_FREE_MEMORY(mDefaultVertexShaderCompiler);
+        VI_FREE_MEMORY(mDefaultPixelShaderCompiler);
     }
 
     bool DX12RendererContext::Init() {
@@ -98,6 +101,27 @@ namespace VIEngine {
             mSwapchain->GetNative()->GetBuffer(i, IID_PPV_ARGS(&mBackBuffers[i]));
             mDevice->CreateRenderTargetView(mBackBuffers[i].Get(), &rtvDescription, rtvHandle);
         }
+
+        // TODO: 設定ファイルから頂点シェーダーコンパイラーを設定ファイルから取得
+        ShaderCompilerConfig defaultVertexShaderCompilerConfig = {};
+        defaultVertexShaderCompilerConfig.EntryPoint = "MainVS";
+        defaultVertexShaderCompilerConfig.Profile = "vs_5_0";
+        #if _DEBUG
+            defaultVertexShaderCompilerConfig.Flags = EShaderCompileFlag::DEBUG | EShaderCompileFlag::SKIP_OPTIMIZATION;
+        #else
+            defaultVertexShaderCompilerConfig.Flags = EShaderCompileFlag::OPTIMIZATION_LEVEL3;
+        #endif
+        mDefaultVertexShaderCompiler = static_cast<DX12ShaderCompiler*>(ShaderCompiler::Create(defaultVertexShaderCompilerConfig));
+        // TODO: 設定ファイルからピクセルシェーダーコンパイラーを設定ファイルから取得
+        ShaderCompilerConfig defaultPixelShaderCompilerConfig = {};
+        defaultPixelShaderCompilerConfig.EntryPoint = "MainPS";
+        defaultPixelShaderCompilerConfig.Profile = "ps_5_0";
+        #if _DEBUG
+            defaultPixelShaderCompilerConfig.Flags = EShaderCompileFlag::DEBUG | EShaderCompileFlag::SKIP_OPTIMIZATION;
+        #else
+            defaultPixelShaderCompilerConfig.Flags = EShaderCompileFlag::OPTIMIZATION_LEVEL3;
+        #endif
+        mDefaultPixelShaderCompiler = static_cast<DX12ShaderCompiler*>(ShaderCompiler::Create(defaultPixelShaderCompilerConfig));
 
         return true;
     }

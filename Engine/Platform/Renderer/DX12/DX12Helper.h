@@ -36,6 +36,6 @@ namespace VIEngine {
     DXGI_SWAP_EFFECT EngineToDX12SwapMode(ESwapMode mode);
     DXGI_ALPHA_MODE EngineToDX12AlphaMode(EAlphaMode mode);
     UINT EngineToDX12SwapchainFlags(ESwapchainFlag flags);
-    bool HasSwapchainFlag(ESwapchainFlag flags, ESwapchainFlag target);
     D3D12_INPUT_CLASSIFICATION EngineToDX12InputType(EInputType type);
+    UINT EngineToDX12ShaderCompileFlag(EShaderCompileFlag flags);
 }

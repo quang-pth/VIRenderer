@@ -4,6 +4,8 @@
 #include"Platform/Renderer/DX12/DX12Helper.h"
 
 namespace VIEngine {
+    class DX12ShaderCompiler;
+
     class DX12RendererContext : public RendererContext {
         DECLARE_RTTI
 
@@ -17,6 +19,8 @@ namespace VIEngine {
         virtual void Present() override;
 
         VI_FORCE_INLINE ID3D12Device* GetDevice() const { return mDevice.Get(); }
+        VI_FORCE_INLINE const DX12ShaderCompiler* GetDefaultVertexShaderCompiler() const { return mDefaultVertexShaderCompiler; }
+        VI_FORCE_INLINE const DX12ShaderCompiler* GetDefaultPixelShaderCompiler() const { return mDefaultPixelShaderCompiler; }
     protected:
         virtual RenderCommandQueue* GetRenderCommandQueueImpl() override { return reinterpret_cast<RenderCommandQueue*>(mRenderCommandQueue); }
     private:
@@ -38,5 +42,7 @@ namespace VIEngine {
         DX12RenderCommandQueue* mRenderCommandQueue;
         DX12Swapchain* mSwapchain;
         HWND mHWND;
+        DX12ShaderCompiler* mDefaultVertexShaderCompiler;
+        DX12ShaderCompiler* mDefaultPixelShaderCompiler;
     };
 }

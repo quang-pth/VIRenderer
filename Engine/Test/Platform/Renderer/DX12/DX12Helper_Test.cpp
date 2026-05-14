@@ -287,10 +287,10 @@ namespace Test {
         EXPECT_EQ(result, 0);
     }
 
-    TEST(DX12HelperTest, HasSwapchainFlag) {
+    TEST(DX12HelperTest, HasFlag) {
         ESwapchainFlag flags = ESwapchainFlag::NONPREROTATED | ESwapchainFlag::ALLOW_MODE_SWICH;
-        EXPECT_TRUE(HasSwapchainFlag(flags, ESwapchainFlag::NONPREROTATED));
-        EXPECT_TRUE(HasSwapchainFlag(flags, ESwapchainFlag::ALLOW_MODE_SWICH));
-        EXPECT_FALSE(HasSwapchainFlag(flags, ESwapchainFlag::RESTRICTED_CONTENT));
+        EXPECT_TRUE(HasFlag(flags, ESwapchainFlag::NONPREROTATED));
+        EXPECT_TRUE(HasFlag(flags, ESwapchainFlag::ALLOW_MODE_SWICH));
+        EXPECT_FALSE(HasFlag(flags, ESwapchainFlag::RESTRICTED_CONTENT));
     }
 }
