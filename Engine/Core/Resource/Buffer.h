@@ -9,7 +9,7 @@ namespace VIEngine {
         static Buffer* Create(void* data, uint64_t sizeBytes);
     public:
         Buffer() = default;
-        explicit Buffer(void* data, uint64_t sizeBytes) noexcept : mData(data), mSize(sizeBytes) {}
+        Buffer(void* data, uint64_t sizeBytes) noexcept : mData(data), mSize(sizeBytes) {}
         virtual ~Buffer() = default;
         VI_FORCE_INLINE const void* GetData() const { return mData; }
         VI_FORCE_INLINE void SetData(void* data) { mData = data; }

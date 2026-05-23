@@ -15,8 +15,8 @@ namespace VIEngine {
         : InputAssembler(attribute)
     {
         mRendererContext = static_cast<DX12RendererContext*>(rendererContext);
-        mVertexBufferLayouts.resize(attribute.VertexAttributes.size());
-        mElementDesc.resize(attribute.VertexAttributes.size());
+        mVertexBufferLayouts.resize(mAttribute.VertexBuffers.size());
+        mVertexBufferAccessors.reserve(mAttribute.VertexBuffers.size());
 
         for (auto& vertexAttribute : attribute.VertexAttributes) {
             uint64_t streamSlot = vertexAttribute.GetStreamSlot();
@@ -24,27 +24,38 @@ namespace VIEngine {
             mVertexBufferLayouts[vertexAttribute.GetStreamSlot()].AddAttribute(vertexAttribute);
         }
 
-        DX12VertexBufferAccessor* bufferAccessor = static_cast<DX12VertexBufferAccessor*>(GPUVertexBufferAccessor::
-            Create(attribute.VertexBuffers.data(), mVertexBufferLayouts.data(), attribute.VertexAttributes.size())
-        );
+        for (uint32_t streamSlot = 0; streamSlot < mAttribute.VertexBuffers.size(); ++streamSlot) {
+            DX12VertexBufferAccessor* bufferAccessor = static_cast<DX12VertexBufferAccessor*>(
+                GPUVertexBufferAccessor::Create({
+                    &mAttribute.VertexBuffers[0], 
+                    &mVertexBufferLayouts[streamSlot], 
+                    1, // 固定：1スロットあたり一つの頂点バッファにする
+                    streamSlot
+                })
+            );
+            mVertexBufferAccessors.push_back(bufferAccessor);
+        }
 
-        mIndexBufferAccessor = static_cast<DX12IndexBufferAccessor*>(GPUIndexBufferAccessor::Create(attribute.IndexBuffer));
+        mIndexBufferAccessor = static_cast<DX12IndexBufferAccessor*>(GPUIndexBufferAccessor::Create(mAttribute.IndexBuffer));
 
-        mElementDesc.resize(attribute.VertexAttributes.size());
+        mElementDesc.resize(mAttribute.VertexAttributes.size());
         for (uint64_t i = 0; i < attribute.VertexAttributes.size(); ++i) {
-            mElementDesc[i].SemanticName = attribute.VertexAttributes[i].GetName().c_str();
-            mElementDesc[i].SemanticIndex = attribute.VertexAttributes[i].GetIndex();
-            mElementDesc[i].Format = EngineToDX12Format(attribute.VertexAttributes[i].GetFormat());
-            mElementDesc[i].InputSlot = attribute.VertexAttributes[i].GetStreamSlot();
+            mElementDesc[i].SemanticName = mAttribute.VertexAttributes[i].GetName().c_str();
+            mElementDesc[i].SemanticIndex = mAttribute.VertexAttributes[i].GetIndex();
+            mElementDesc[i].Format = EngineToDX12Format(mAttribute.VertexAttributes[i].GetFormat());
+            mElementDesc[i].InputSlot = mAttribute.VertexAttributes[i].GetStreamSlot();
             mElementDesc[i].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-            mElementDesc[i].InputSlotClass = EngineToDX12InputType(attribute.VertexAttributes[i].GetType());
+            mElementDesc[i].InputSlotClass = EngineToDX12InputType(mAttribute.VertexAttributes[i].GetType());
             // TODO: インスタンシングをサポートする
             mElementDesc[i].InstanceDataStepRate = 0;
         }
     }
 
     DX12InputAssembler::~DX12InputAssembler() {
-        VI_FREE_MEMORY(mVertexBufferAccessor);
+        for (auto& vertexBufferAccessor : mVertexBufferAccessors) {
+            VI_FREE_MEMORY(vertexBufferAccessor)
+        }
+        mVertexBufferAccessors.clear();
         VI_FREE_MEMORY(mIndexBufferAccessor)
     }
 }

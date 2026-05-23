@@ -18,7 +18,7 @@ namespace VIEngine {
     }
 
     uint64_t VertexLayout::GetSize() const {
-        uint16_t sizeInBytes = 0;
+        uint64_t sizeInBytes = 0;
         for (const VertexAttribute& attribute : mAttributes) {
             sizeInBytes += VertexAttribute::GetFormatSize(attribute.GetFormat());
         }

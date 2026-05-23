@@ -9,7 +9,7 @@ namespace VIEngine {
     class DX12RenderCommand;
     class Application;
 
-    class VI_API DX12RenderCommandQueue : public RenderCommandQueue {
+    class VI_API DX12RenderCommandQueue final : public RenderCommandQueue {
         DECLARE_RTTI
     public:
         DX12RenderCommandQueue(RendererContext* rendererContext, const CommandQueueAttribute& attribute);

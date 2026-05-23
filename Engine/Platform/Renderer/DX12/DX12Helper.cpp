@@ -176,4 +176,42 @@ namespace VIEngine {
         }
         return result;
     }
+
+    D3D12_DESCRIPTOR_RANGE_TYPE EngineToDX12DescriptorRangeType(EDescriptorRangeType type) {
+        switch (type)
+        {
+            case EDescriptorRangeType::SHADER_RESOURCE:         return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+            case EDescriptorRangeType::UNORDERED_ACCESS:        return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+            case EDescriptorRangeType::CONSTANT_BUFFER:         return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+            case EDescriptorRangeType::SAMPLER:                 return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+            default:                                            VI_ASSERT("Unknown descriptor range type");
+        }
+    }
+
+    D3D12_ROOT_PARAMETER_TYPE EngineToDX12RootParameterType(EDescriptorRangeLayoutType type) {
+        switch (type)
+        {
+            case EDescriptorRangeLayoutType::DESCRIPTOR_TABLE:          return D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            case EDescriptorRangeLayoutType::CONSTANTS_32BIT:           return D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            case EDescriptorRangeLayoutType::CONSTANT_BUFFER_VIEW:      return D3D12_ROOT_PARAMETER_TYPE_CBV;
+            case EDescriptorRangeLayoutType::SHADER_RESOURCE_VIEW:      return D3D12_ROOT_PARAMETER_TYPE_SRV;
+            case EDescriptorRangeLayoutType::UNORDERED_ACCESS_VIEW:     return D3D12_ROOT_PARAMETER_TYPE_UAV;
+            default:                                                    VI_ASSERT("Unknown root parameter type");
+        }
+    }
+
+    D3D12_SHADER_VISIBILITY EngineToDX12ShaderVisbility(EShaderStageFlag flag) {
+        switch (flag)
+        {
+            case EShaderStageFlag::ALL:                             return D3D12_SHADER_VISIBILITY_ALL;
+            case EShaderStageFlag::VERTEX:                          return D3D12_SHADER_VISIBILITY_VERTEX;
+            case EShaderStageFlag::TESSELLATION_CONTROL:            return D3D12_SHADER_VISIBILITY_HULL;
+            case EShaderStageFlag::TESSELLATION_EVALUATE:           return D3D12_SHADER_VISIBILITY_DOMAIN;
+            case EShaderStageFlag::GEOMETRY:                        return D3D12_SHADER_VISIBILITY_GEOMETRY;
+            case EShaderStageFlag::PIXEL:                           return D3D12_SHADER_VISIBILITY_PIXEL;
+            case EShaderStageFlag::AMPLIFICATION:                   return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
+            case EShaderStageFlag::MESH:                            return D3D12_SHADER_VISIBILITY_MESH;
+            default:                                                VI_ASSERT("Unknown root parameter type");
+        }
+    }
 }

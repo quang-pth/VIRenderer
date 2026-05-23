@@ -4,7 +4,7 @@
 #include"Core/Renderer/ShaderCompiler.h"
 
 namespace VIEngine {
-    class VI_API DX12ShaderCompiler : public ShaderCompiler {
+    class VI_API DX12ShaderCompiler final : public ShaderCompiler {
         DECLARE_RTTI
     public:
         DX12ShaderCompiler() = default;

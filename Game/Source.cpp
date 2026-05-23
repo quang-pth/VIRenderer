@@ -526,14 +526,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	_rootParameter.DescriptorTable.NumDescriptorRanges = 1;
 	_rootParameter.DescriptorTable.pDescriptorRanges = &_descTableRange;
 
-	// D3D12_ROOT_PARAMETER _constRootParameter = {};
-	// _constRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-	// _constRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	// _constRootParameter.Constants.ShaderRegister = 0;
-	// _constRootParameter.Constants.RegisterSpace = 0;
-	// _constRootParameter.Constants.Num32BitValues = 8;
+	struct MeshData {
+		float color[4];
+	};
 
-	// D3D12_ROOT_PARAMETER _rootParams[2] = {_rootParameter, _constRootParameter};
+	UINT rawSize = sizeof(MeshData);
+	UINT alignedSize = (rawSize + 255) & ~255; 
+
+	D3D12_HEAP_PROPERTIES heapProps = {};
+	heapProps.Type = D3D12_HEAP_TYPE_UPLOAD; 
+	heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+	resourceDesc = {};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Alignment = 0;
+	resourceDesc.Width = alignedSize; 
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.SampleDesc.Quality = 0;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	ID3D12Resource* myConstantBufferResource = nullptr;
+
+	_dev->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, 
+		nullptr,
+		IID_PPV_ARGS(&myConstantBufferResource)
+	);
+
+	MeshData meshData;
+	meshData.color[0] = 1.0f;
+	meshData.color[1] = 0.0f;
+	meshData.color[2] = 0.0f;
+	meshData.color[3] = 1.0f;
+	void* constantBufferData = nullptr;
+	myConstantBufferResource->Map(0, nullptr, (void**)&constantBufferData);
+	memcpy(constantBufferData, &meshData, sizeof(meshData));
+	myConstantBufferResource->Unmap(0, nullptr);
+
+	D3D12_ROOT_PARAMETER _constRootParameter = {};
+	_constRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	_constRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	_constRootParameter.Descriptor.RegisterSpace = 0;
+	_constRootParameter.Descriptor.ShaderRegister = 0;
+
+	D3D12_ROOT_PARAMETER _rootParams[2] = {_rootParameter, _constRootParameter};
 
 	D3D12_STATIC_SAMPLER_DESC _samplerDesc = {};
 	_samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -547,8 +592,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	D3D12_ROOT_SIGNATURE_DESC _rootSignatureDesc = {};
 	_rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	_rootSignatureDesc.NumParameters = 1;
-	_rootSignatureDesc.pParameters = &_rootParameter;
+	_rootSignatureDesc.NumParameters = _countof(_rootParams);
+	_rootSignatureDesc.pParameters = _rootParams;
 	_rootSignatureDesc.NumStaticSamplers = 1;
 	_rootSignatureDesc.pStaticSamplers = &_samplerDesc;
 
@@ -679,6 +724,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		_cmdList->SetGraphicsRootSignature(_rootSignature);
 		_cmdList->SetDescriptorHeaps(1, &_textureDescHeap);
 		_cmdList->SetGraphicsRootDescriptorTable(0, _textureDescHeap->GetGPUDescriptorHandleForHeapStart());
+		_cmdList->SetGraphicsRootConstantBufferView(1, myConstantBufferResource->GetGPUVirtualAddress());
 		
 		// float color[] = {
 		// 	1.0f, 0.0f, 0.0f, 1.0f,

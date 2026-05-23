@@ -6,7 +6,8 @@
 #define ENABLE_BITMASK_OPERATORS(Type) \
     inline Type operator | (Type a, Type b) { return static_cast<Type>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); } \
     inline Type operator & (Type a, Type b) { return static_cast<Type>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); } \
-    inline Type& operator |= (Type& a, Type b) { a = a | b; return a; }
+    inline Type& operator |= (Type& a, Type b) { a = a | b; return a; } \
+    VI_FORCE_INLINE bool HasFlag(Type flags, Type target) { return (flags & target) == target; }
 
 namespace VIEngine {
     enum class EBufferUsage : uint8_t {
@@ -71,14 +72,16 @@ namespace VIEngine {
     };
     ENABLE_BITMASK_OPERATORS(ESwapchainFlag)
 
-    enum class EShaderStageFlag : uint8_t {
-        NONE = 0,
+    enum class EShaderStageFlag : uint16_t {
+        ALL = 0,
         VERTEX = 1 << 1,
         TESSELLATION_CONTROL = 1 << 2,
         TESSELLATION_EVALUATE = 1 << 3,
         GEOMETRY = 1 << 4,
         PIXEL = 1 << 5,
-        COMPUTE = 1 << 6
+        COMPUTE = 1 << 6,
+        AMPLIFICATION = 1 << 7,
+        MESH = 1 << 8
     };
     ENABLE_BITMASK_OPERATORS(EShaderStageFlag)
 
@@ -96,6 +99,21 @@ namespace VIEngine {
         WARNING_AS_ERRORS = 1 << 9
     };
     ENABLE_BITMASK_OPERATORS(EShaderCompileFlag)
+
+    enum class EDescriptorRangeType : uint8_t {
+        SHADER_RESOURCE,
+        UNORDERED_ACCESS,
+        CONSTANT_BUFFER,
+        SAMPLER
+    };
+
+    enum class EDescriptorRangeLayoutType : uint8_t {
+        DESCRIPTOR_TABLE,
+        CONSTANTS_32BIT,
+        CONSTANT_BUFFER_VIEW,
+        SHADER_RESOURCE_VIEW,
+        UNORDERED_ACCESS_VIEW,
+    };
 
     struct CommandQueueAttribute {
         ERenderCommandType Type;
@@ -122,7 +140,7 @@ namespace VIEngine {
     };
 
     struct ShaderStage {
-        EShaderStageFlag Flags{EShaderStageFlag::NONE};
+        EShaderStageFlag Flags;
         std::string SourceFile;
     };
 
@@ -141,7 +159,58 @@ namespace VIEngine {
         EShaderCompileFlag Flags{EShaderCompileFlag::NONE};
         std::vector<ShaderMacro> Macros{};
     };
-    
-    VI_FORCE_INLINE bool HasFlag(ESwapchainFlag flags, ESwapchainFlag target) { return (flags & target) == target; }
-    VI_FORCE_INLINE bool HasFlag(EShaderCompileFlag flags, EShaderCompileFlag target) { return (flags & target) == target; }
+
+    class DescriptorRangeLayout;
+    struct DescriptorRangeAttribute {
+        const DescriptorRangeLayout* Layout;
+    };
+
+    struct DescriptorRangeLayoutBinding {
+        EDescriptorRangeType RangeType;
+        uint64_t Count;
+        uint64_t BaseRegister;
+        uint64_t RegisterSpace;
+        uint64_t Offset{0xffffffff};
+    };
+    using DescriptorRangeLayoutBindingList = std::vector<DescriptorRangeLayoutBinding>;
+
+    struct DescriptorRangeLayoutAttribute {
+        DescriptorRangeLayoutBindingList BindingList;
+        EShaderStageFlag ShaderVisibilityFlag;
+    };
+
+    struct UniformBufferLayoutAttribute {
+        EDescriptorRangeLayoutType LayoutType;
+        EShaderStageFlag ShaderVisibilityFlag;
+        uint64_t BaseRegister;
+        uint64_t RegisterSpace;
+        uint64_t Count;
+    };
+
+    class UniformBufferLayout;
+    struct UniformBufferAttribute {
+        const UniformBufferLayout* Layout;
+    };
+
+    struct RenderPipelineLayoutAttribute {
+        std::vector<UniformBufferLayout*> UniformBufferLayouts;
+    };
+
+    class InputAssembler;
+    class RenderPipelineLayout;
+    class Shader;
+    struct RenderPipelineAttribute {
+        InputAssembler* pInputAssembler;
+        RenderPipelineLayout* pPipelineLayout;
+        Shader* pShader;
+    };
+
+    class GPUBuffer;
+    class VertexLayout;
+    struct GPUVertexBufferAccessorAttribute {
+        GPUBuffer *const* VertexBuffer;
+        const VertexLayout* Layout; 
+        uint64_t Count;
+        uint32_t StreamSlot;
+    };
 }

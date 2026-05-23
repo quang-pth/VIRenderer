@@ -47,4 +47,18 @@ namespace VIEngine {
 
         return mShaderResourceMap.at(stageFlag).Get();
     }
+
+    const void* DX12Shader::GetShaderByteCode(EShaderStageFlag stage) const {
+        if (mShaderResourceMap.count(stage) <= 0) {
+            return nullptr;
+        }
+        return mShaderResourceMap.at(stage)->GetBufferPointer();
+    }
+
+    size_t DX12Shader::GetShaderByteCodeSize(EShaderStageFlag stage) const {
+        if (mShaderResourceMap.count(stage) <= 0) {
+            return 0;
+        }
+        return mShaderResourceMap.at(stage)->GetBufferSize();
+    }
 }

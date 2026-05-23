@@ -6,7 +6,7 @@
 namespace VIEngine {
     class DX12RendererContext;
 
-    class VI_API DX12Swapchain : public Swapchain {
+    class VI_API DX12Swapchain final : public Swapchain {
         DECLARE_RTTI
     public:
         DX12Swapchain() = default;

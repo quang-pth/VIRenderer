@@ -10,6 +10,8 @@ namespace VIEngine {
         static Shader* Create(const ShaderAttribute& attribute);
     public:
         virtual ~Shader() = default;
+        virtual const void* GetShaderByteCode(EShaderStageFlag stage) const = 0;
+        virtual size_t GetShaderByteCodeSize(EShaderStageFlag stage) const = 0;
     protected:
         Shader() = default;
         Shader(const ShaderAttribute& attribute) noexcept : mAttribute(attribute) {}

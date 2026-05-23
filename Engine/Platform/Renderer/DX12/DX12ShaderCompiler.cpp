@@ -1,4 +1,5 @@
 #include"Platform/Renderer/DX12/DX12ShaderCompiler.h"
+#include"Core/Logger/Logger.h"
 #include<d3dcompiler.h>
 
 namespace VIEngine {
@@ -25,8 +26,10 @@ namespace VIEngine {
     ID3DBlob* DX12ShaderCompiler::Compile(const ShaderStage& stage, const ShaderCompilerConfig& compilerConfig) const {
         ID3D10Blob* blob = nullptr;
         std::vector<D3D_SHADER_MACRO> shaderMacros = ConvertMacros(compilerConfig.Macros);
-        DX12CheckException(D3DCompileFromFile(
-            AnsiToWString(stage.SourceFile).c_str(),
+        std::wstring wstrSourceFile = AnsiToWString(stage.SourceFile);
+        ID3DBlob* _errorBlob = nullptr;
+        HRESULT result = D3DCompileFromFile(
+            wstrSourceFile.c_str(),
             shaderMacros.size() ? shaderMacros.data() : nullptr,
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
             compilerConfig.EntryPoint.c_str(),
@@ -34,8 +37,21 @@ namespace VIEngine {
             EngineToDX12ShaderCompileFlag(compilerConfig.Flags),
             0,
             &blob,
-            nullptr
-        ));
+            &_errorBlob
+        );
+        if (FAILED(result)) {
+            if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+                CORE_LOG_ERROR("{0} is not found", stage.SourceFile.c_str());
+            }
+            else {
+                std::string errorMsg;
+                errorMsg.resize(_errorBlob->GetBufferSize());
+                std::copy_n((char*)_errorBlob->GetBufferPointer(), _errorBlob->GetBufferSize(), errorMsg.begin());
+                errorMsg += "\n";
+                CORE_LOG_ERROR(errorMsg.c_str());
+            }
+            return nullptr;
+        }
         return blob;
     }
 

@@ -4,7 +4,7 @@
 #include"Platform/Renderer/DX12/DX12RendererContext.h"
 
 namespace VIEngine {
-    class VI_API DX12Buffer : public GPUBuffer {
+    class VI_API DX12Buffer final : public GPUBuffer {
         DECLARE_RTTI
     public:
         DX12Buffer() = default;

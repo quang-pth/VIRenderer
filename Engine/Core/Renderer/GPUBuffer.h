@@ -10,10 +10,8 @@ namespace VIEngine {
     class VI_API GPUBuffer {
         DECLARE_RTTI
     public:
-        static GPUBuffer* Create(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset, EBufferUsage usage = EBufferUsage::STATIC);
+        static GPUBuffer* Create(void* data, uint64_t sizeBytes, uint64_t count, uint64_t offset, EBufferUsage usage = EBufferUsage::DYNAMIC);
     public:
-        GPUBuffer(Buffer* cpuBuffer, uint64_t count, uint64_t offset, EBufferUsage usage = EBufferUsage::STATIC) noexcept 
-            : mCPUBuffer(cpuBuffer), mCount(count), mOffset(offset), mUsage(usage) {}
         virtual ~GPUBuffer() = default;
         VI_FORCE_INLINE const Buffer* GetCPUBuffer() const { return mCPUBuffer; }
         VI_FORCE_INLINE void SetCPUBuffer(Buffer* cpuBuffer) { mCPUBuffer = cpuBuffer; }
@@ -25,6 +23,7 @@ namespace VIEngine {
         VI_FORCE_INLINE void SetOffset(uint64_t offset) { mOffset = offset; }
     protected:
         GPUBuffer() = default;
+        GPUBuffer(Buffer* cpuBuffer, uint64_t count, uint64_t offset, EBufferUsage usage) noexcept  : mCPUBuffer(cpuBuffer), mCount(count), mOffset(offset), mUsage(usage) {}
     protected:
         Buffer* mCPUBuffer;
         EBufferUsage mUsage;

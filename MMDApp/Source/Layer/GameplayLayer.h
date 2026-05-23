@@ -1,6 +1,13 @@
 #pragma once
 
 #include<Core/Layer/Layer.h>
+#include<Core/Renderer/GPUBuffer.h>
+#include<Core/Renderer/InputAssembler.h>
+#include<Core/Renderer/Shader.h>
+#include<Core/Renderer/UniformBufferLayout.h>
+#include<Core/Renderer/UniformBuffer.h>
+#include<Core/Renderer/RenderPipelineLayout.h>
+#include<Core/Renderer/RenderPipeline.h>
 
 namespace VIEngine {
 	class RenderCommand;
@@ -24,5 +31,7 @@ namespace MMDApp {
 		virtual bool OnMouseScrolledEvent(const VIEngine::MouseScrolledEvent& mouseEvent) override;
 	private:
 		VIEngine::RenderCommand* mRenderCommand;
+		VIEngine::RenderPipeline* mRenderPipeline;
+		VIEngine::UniformBuffer* mUniformBuffer;
 	};
 }

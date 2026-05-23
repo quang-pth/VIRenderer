@@ -6,18 +6,18 @@
 namespace VIEngine {
     DEFINE_RTTI(DX12VertexBufferAccessor, GPUVertexBufferAccessor::RunTimeType)
 
-    GPUVertexBufferAccessor* GPUVertexBufferAccessor::Create(GPUBuffer*const* vertexBuffer, const VertexLayout* layout, uint64_t count) {
-        return new DX12VertexBufferAccessor(vertexBuffer, layout, count);
+    GPUVertexBufferAccessor* GPUVertexBufferAccessor::Create(const GPUVertexBufferAccessorAttribute& attribute) {
+        return new DX12VertexBufferAccessor(attribute);
     }
 
-    DX12VertexBufferAccessor::DX12VertexBufferAccessor(GPUBuffer *const* vertexBuffer, const VertexLayout* layout, uint64_t count)  
-        : GPUVertexBufferAccessor(layout, count)
+    DX12VertexBufferAccessor::DX12VertexBufferAccessor(const GPUVertexBufferAccessorAttribute& attribute)  
+        : GPUVertexBufferAccessor(attribute.Layout, attribute.Count, attribute.StreamSlot)
     {
-        mVertexBuffers.reserve(count);
-        mViews.reserve(count);
+        mVertexBuffers.reserve(attribute.Count);
+        mViews.reserve(attribute.Count);
 
-        for (uint64_t i = 0; i < count; ++i) {
-            const DX12Buffer* buffer = static_cast<const DX12Buffer*>(vertexBuffer[i]);
+        for (uint64_t i = 0; i < attribute.Count; ++i) {
+            const DX12Buffer* buffer = static_cast<const DX12Buffer*>(attribute.VertexBuffer[i]);
             VI_ASSERT(buffer != nullptr && "DX12Buffer is nullptr");
             VI_ASSERT(buffer->GetResource() != nullptr && "DX12Buffer.GetResource() return nullptr");
             mVertexBuffers.push_back(buffer);
@@ -26,20 +26,11 @@ namespace VIEngine {
                 (UINT)buffer->GetCPUBuffer()->GetSize(),
                 (UINT)mLayout[i].GetSize()
             });
-            mViewMap[buffer] = &mViews[i];
         }
 
     }
 
     DX12VertexBufferAccessor::~DX12VertexBufferAccessor() {
 
-    }
-
-    D3D12_VERTEX_BUFFER_VIEW* DX12VertexBufferAccessor::GetView(const DX12Buffer* buffer) const {
-        if (mViewMap.count(buffer) < 0) {
-            return nullptr;
-        }
-
-        return mViewMap.at(buffer);
     }
 }

@@ -38,4 +38,7 @@ namespace VIEngine {
     UINT EngineToDX12SwapchainFlags(ESwapchainFlag flags);
     D3D12_INPUT_CLASSIFICATION EngineToDX12InputType(EInputType type);
     UINT EngineToDX12ShaderCompileFlag(EShaderCompileFlag flags);
+    D3D12_DESCRIPTOR_RANGE_TYPE EngineToDX12DescriptorRangeType(EDescriptorRangeType type);
+    D3D12_ROOT_PARAMETER_TYPE EngineToDX12RootParameterType(EDescriptorRangeLayoutType type);
+    D3D12_SHADER_VISIBILITY EngineToDX12ShaderVisbility(EShaderStageFlag flag);
 }

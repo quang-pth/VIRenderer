@@ -6,7 +6,7 @@
 namespace VIEngine {
     class DX12ShaderCompiler;
 
-    class DX12RendererContext : public RendererContext {
+    class DX12RendererContext final : public RendererContext {
         DECLARE_RTTI
 
         friend class DX12RenderCommand;

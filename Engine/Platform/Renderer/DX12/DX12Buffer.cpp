@@ -39,18 +39,20 @@ namespace VIEngine {
         vertexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
         ID3D12Device* device = mRendererContext->GetDevice();
-        device->CreateCommittedResource(
+        DX12CheckException(device->CreateCommittedResource(
             &heapProperties,
             D3D12_HEAP_FLAG_NONE,
             &vertexBufferDesc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             IID_PPV_ARGS(&mResource)
-        );
+        ));
 
-        unsigned short* resourceAddress = nullptr;
-        mResource->Map(0, nullptr, (void**)&resourceAddress);
-        memcpy(resourceAddress, mCPUBuffer->GetData(), mCPUBuffer->GetSize());
-        mResource->Unmap(0, nullptr);
+        if (mUsage == EBufferUsage::DYNAMIC) {
+            unsigned short* resourceAddress = nullptr;
+            mResource->Map(0, nullptr, (void**)&resourceAddress);
+            memcpy(resourceAddress, mCPUBuffer->GetData(), mCPUBuffer->GetSize());
+            mResource->Unmap(0, nullptr);
+        }
     }
 }
