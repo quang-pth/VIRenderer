@@ -131,14 +131,12 @@ namespace VIEngine {
         // TODO: 設定可能化
         mGraphicCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         DX12InputAssembler* inputAssembler = static_cast<DX12InputAssembler*>(mActiveRenderPipeline->GetInputAssembler());
-        const std::vector<DX12VertexBufferAccessor*>& verterBufferAccessors = inputAssembler->GetVertexBufferAccessors();
-        for (DX12VertexBufferAccessor* vertexBufferAccessor : verterBufferAccessors) {
-            mGraphicCommandList->IASetVertexBuffers(
-                vertexBufferAccessor->GetStreamSlot(), 
-                vertexBufferAccessor->GetViews().size(), 
-                vertexBufferAccessor->GetViews().data()
-            );
-        }
+        DX12VertexBufferAccessor* vertexBufferAccessor = inputAssembler->GeVertexBufferAccessor();
+        mGraphicCommandList->IASetVertexBuffers(
+            0, 
+            vertexBufferAccessor->GetViews().size(),
+            vertexBufferAccessor->GetViews().data()
+        );
         DX12IndexBufferAccessor* indexBufferAccessor = static_cast<DX12IndexBufferAccessor*>(inputAssembler->GetIndexBufferAccessor());
 		mGraphicCommandList->IASetIndexBuffer(indexBufferAccessor->GetView());
 		mGraphicCommandList->DrawIndexedInstanced(6, 1, 0, 0, 0);

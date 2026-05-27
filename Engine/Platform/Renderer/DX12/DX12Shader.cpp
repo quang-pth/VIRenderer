@@ -33,6 +33,9 @@ namespace VIEngine {
             if (resource != nullptr) {
                 mShaderResourceMap[shaderStage.Flags].Attach(resource);
             }
+            else {
+                OutputDebugString(AnsiToWString("Failed to compile shader: " + shaderStage.SourceFile).c_str());
+            }
         }
     }
 

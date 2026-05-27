@@ -12,7 +12,7 @@ namespace VIEngine {
     public:
         DX12UniformBuffer(RendererContext* rendererContext, const UniformBufferAttribute& attribute);
         ~DX12UniformBuffer();
-        virtual void Upload() override;
+        virtual void Upload(void* data, uint64_t sizeInBytes) override;
         VI_FORCE_INLINE ID3D12Resource* GetGPUConstantBuffer() { return mGPUConstantBuffer.Get(); }
         VI_FORCE_INLINE ID3D12Resource* GetGPUShaderResourceBuffer() { return mGPUShaderResourceBuffer.Get(); }
         VI_FORCE_INLINE ID3D12Resource* GetGPUUnorderedAccessBuffer() { return mGPUUnorderedAccessBuffer.Get(); }

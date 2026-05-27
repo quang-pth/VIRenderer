@@ -32,6 +32,7 @@ namespace MMDApp {
 	private:
 		VIEngine::RenderCommand* mRenderCommand;
 		VIEngine::RenderPipeline* mRenderPipeline;
-		VIEngine::UniformBuffer* mUniformBuffer;
+		VIEngine::UniformBuffer* mMeshBuffer;
+		VIEngine::UniformBuffer* mLightBuffer;
 	};
 }

@@ -5,6 +5,7 @@
 #include<Core/Math/Math.h>
 #include<Core/Renderer/RenderCommand.h>
 #include<Core/Application.h>
+#include<Core/Math/Vector4.h>
 
 namespace MMDApp {
     GameplayLayer::GameplayLayer() {
@@ -45,8 +46,8 @@ namespace MMDApp {
         shaderAttribute.Stages.emplace_back(ShaderStage{EShaderStageFlag::VERTEX, "Assets/Shader/BasicVertexShader.vs.hlsl"});
         shaderAttribute.Stages.emplace_back(ShaderStage{EShaderStageFlag::PIXEL, "Assets/Shader/BasicPixelShader.ps.hlsl"});
         Shader* quadDefaultShader = Shader::Create(shaderAttribute);
-
-        UniformBufferLayout* uniformLayout = UniformBufferLayout::Create(
+       
+        UniformBufferLayout* meshBufferLayout = UniformBufferLayout::Create(
             UniformBufferLayoutAttribute{
                 EDescriptorRangeLayoutType::CONSTANT_BUFFER_VIEW,
                 EShaderStageFlag::PIXEL,
@@ -54,20 +55,33 @@ namespace MMDApp {
             }
         );
        
-        mUniformBuffer = UniformBuffer::Create({uniformLayout});
+        mMeshBuffer = UniformBuffer::Create({meshBufferLayout});
         struct MeshData {
-    		float color[4];
+    		Math::Vector3 color;
 	    };
         MeshData meshData;
         meshData.color[0] = 1.0f;
-        meshData.color[1] = 0.0f;
-        meshData.color[2] = 0.0f;
-        meshData.color[3] = 1.0f;
-        mUniformBuffer->Push(&meshData, sizeof(MeshData));
-        mUniformBuffer->Upload();
+        meshData.color[1] = 1.0f;
+        meshData.color[2] = 1.0f;
+        mMeshBuffer->Upload(&meshData, sizeof(MeshData));
+        
+        UniformBufferLayout* lightBufferLayout = UniformBufferLayout::Create(
+            UniformBufferLayoutAttribute{
+                EDescriptorRangeLayoutType::CONSTANT_BUFFER_VIEW,
+                EShaderStageFlag::PIXEL,
+                1, 0, 0
+            }
+        );
+        mLightBuffer = UniformBuffer::Create({lightBufferLayout});
+        struct Light {
+            Math::Vector3 Color;
+        };
+        Light directionalLight;
+        directionalLight.Color = {0.0f, 1.0f, 0.0f};
+        mLightBuffer->Upload(&directionalLight, sizeof(Light));
 
         RenderPipelineLayout* pipelineLayout = RenderPipelineLayout::Create(
-            RenderPipelineLayoutAttribute{{uniformLayout}}
+            RenderPipelineLayoutAttribute{{meshBufferLayout, lightBufferLayout}}
         );
 
         mRenderPipeline = RenderPipeline::Create(
@@ -94,7 +108,8 @@ namespace MMDApp {
         mRenderCommand->SetScissor(0.0f, 0.0f, 0.0f + app.GetConfig().WindowConfig.Width, 0.0f + app.GetConfig().WindowConfig.Height);
 
         mRenderCommand->SetRenderPipeline(mRenderPipeline);
-        mRenderCommand->SetConstantsBuffer(mUniformBuffer);
+        mRenderCommand->SetConstantsBuffer(mMeshBuffer);
+        mRenderCommand->SetConstantsBuffer(mLightBuffer);
         mRenderCommand->Draw();
         mRenderCommand->SetBackBufferPresent();
         mRenderCommand->Submit();

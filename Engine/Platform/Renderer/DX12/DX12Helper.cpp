@@ -143,7 +143,7 @@ namespace VIEngine {
     }
 
     UINT EngineToDX12ShaderCompileFlag(EShaderCompileFlag flags) {
-        UINT result;
+        UINT result = 0;
         if (HasFlag(flags, EShaderCompileFlag::DEBUG)) {
             result |= D3DCOMPILE_DEBUG;
         }

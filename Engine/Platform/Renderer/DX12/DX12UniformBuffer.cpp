@@ -17,11 +17,10 @@ namespace VIEngine {
     }
 
     DX12UniformBuffer::~DX12UniformBuffer() {
-
     }
 
-    void DX12UniformBuffer::Upload() {
-        uint64_t alignedSize = AlignForward(mConstantBuffersSize, 256);
+    void DX12UniformBuffer::Upload(void* data, uint64_t sizeInBytes) {
+        uint64_t alignedSize = AlignForward(sizeInBytes, 256);
 
         // TODO: カスタマイズ可能化
         D3D12_HEAP_PROPERTIES heapProps = {};
@@ -32,7 +31,7 @@ namespace VIEngine {
         D3D12_RESOURCE_DESC	resourceDesc = {};
         resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
         resourceDesc.Alignment = 0;
-        resourceDesc.Width = alignedSize; 
+        resourceDesc.Width = sizeInBytes;
         resourceDesc.Height = 1;
         resourceDesc.DepthOrArraySize = 1;
         resourceDesc.MipLevels = 1;
@@ -53,7 +52,7 @@ namespace VIEngine {
 
         void* uploadAddress = nullptr;
         mGPUConstantBuffer->Map(0, nullptr, (void**)&uploadAddress);
-        memcpy(uploadAddress, mConstantBuffers.data(), mConstantBuffersSize);
+        memcpy(uploadAddress, data, sizeInBytes);
         mGPUConstantBuffer->Unmap(0, nullptr);
     }
 }

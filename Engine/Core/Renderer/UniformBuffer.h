@@ -12,15 +12,10 @@ namespace VIEngine {
     public:
         virtual ~UniformBuffer() = default;
         VI_FORCE_INLINE const UniformBufferLayout* GetLayout() const { return mAttribute.Layout; }
-        VI_FORCE_INLINE const Buffer* GetConstantBuffers() const { return mConstantBuffers.data(); }
-        VI_FORCE_INLINE uint64_t GetConstantBuffersSize() const { return mConstantBuffersSize; }
-        void Push(void* data, uint64_t sizeInBytes);
-        virtual void Upload() = 0;
+        virtual void Upload(void* data, uint64_t sizeInBytes) = 0;
     protected:
-        UniformBuffer(const UniformBufferAttribute& attribute) noexcept : mAttribute(attribute), mConstantBuffers(), mConstantBuffersSize(0) {}
+        UniformBuffer(const UniformBufferAttribute& attribute) noexcept : mAttribute(attribute) {}
     protected:
         UniformBufferAttribute mAttribute;
-        std::vector<Buffer> mConstantBuffers;
-        uint64_t mConstantBuffersSize;
     };
 }

@@ -4,10 +4,10 @@
 #include"Core/Resource/CommonDefine.h"
 
 #define ENABLE_BITMASK_OPERATORS(Type) \
-    inline Type operator | (Type a, Type b) { return static_cast<Type>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); } \
-    inline Type operator & (Type a, Type b) { return static_cast<Type>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); } \
-    inline Type& operator |= (Type& a, Type b) { a = a | b; return a; } \
-    VI_FORCE_INLINE bool HasFlag(Type flags, Type target) { return (flags & target) == target; }
+    VI_FORCE_INLINE Type operator | (Type a, Type b) { return static_cast<Type>(static_cast<std::underlying_type_t<Type>>(a) | static_cast<std::underlying_type_t<Type>>(b)); } \
+    VI_FORCE_INLINE Type operator & (Type a, Type b) { return static_cast<Type>(static_cast<std::underlying_type_t<Type>>(a) & static_cast<std::underlying_type_t<Type>>(b)); } \
+    VI_FORCE_INLINE Type& operator |= (Type& a, Type b) { a = static_cast<Type>(static_cast<std::underlying_type_t<Type>>(a) | static_cast<std::underlying_type_t<Type>>(b)); return a; } \
+    VI_FORCE_INLINE bool HasFlag(Type flags, Type target) { return (static_cast<std::underlying_type_t<Type>>(flags) & static_cast<std::underlying_type_t<Type>>(target)) == static_cast<std::underlying_type_t<Type>>(target); }
 
 namespace VIEngine {
     enum class EBufferUsage : uint8_t {
@@ -156,7 +156,7 @@ namespace VIEngine {
     struct ShaderCompilerConfig {
         std::string EntryPoint;
         std::string Profile;
-        EShaderCompileFlag Flags{EShaderCompileFlag::NONE};
+        EShaderCompileFlag Flags;
         std::vector<ShaderMacro> Macros{};
     };
 
@@ -182,9 +182,9 @@ namespace VIEngine {
     struct UniformBufferLayoutAttribute {
         EDescriptorRangeLayoutType LayoutType;
         EShaderStageFlag ShaderVisibilityFlag;
-        uint64_t BaseRegister;
-        uint64_t RegisterSpace;
-        uint64_t Count;
+        uint32_t BaseRegister;
+        uint32_t RegisterSpace;
+        uint32_t Count;
     };
 
     class UniformBufferLayout;
@@ -211,6 +211,5 @@ namespace VIEngine {
         GPUBuffer *const* VertexBuffer;
         const VertexLayout* Layout; 
         uint64_t Count;
-        uint32_t StreamSlot;
     };
 }

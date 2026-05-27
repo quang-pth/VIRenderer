@@ -13,12 +13,12 @@ namespace VIEngine {
         DX12InputAssembler() = default;
         DX12InputAssembler(class RendererContext* rendererContext, const InputAssemblerAttribute& attribute);
         ~DX12InputAssembler();
-        VI_FORCE_INLINE const std::vector<DX12VertexBufferAccessor*>& GetVertexBufferAccessors() const { return mVertexBufferAccessors; }
+        VI_FORCE_INLINE DX12VertexBufferAccessor* GeVertexBufferAccessor() const { return mVertexBufferAccessor; }
         VI_FORCE_INLINE DX12IndexBufferAccessor* GetIndexBufferAccessor() const { return mIndexBufferAccessor; }
         VI_FORCE_INLINE const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetElementDesc() const { return mElementDesc; }
     private:
         DX12RendererContext* mRendererContext;
-        std::vector<DX12VertexBufferAccessor*> mVertexBufferAccessors;
+        DX12VertexBufferAccessor* mVertexBufferAccessor;
         DX12IndexBufferAccessor* mIndexBufferAccessor;
         std::vector<D3D12_INPUT_ELEMENT_DESC> mElementDesc;
     };

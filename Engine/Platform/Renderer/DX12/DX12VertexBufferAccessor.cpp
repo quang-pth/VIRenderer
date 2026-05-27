@@ -11,12 +11,12 @@ namespace VIEngine {
     }
 
     DX12VertexBufferAccessor::DX12VertexBufferAccessor(const GPUVertexBufferAccessorAttribute& attribute)  
-        : GPUVertexBufferAccessor(attribute.Layout, attribute.Count, attribute.StreamSlot)
+        : GPUVertexBufferAccessor(attribute.Layout, attribute.Count)
     {
-        mVertexBuffers.reserve(attribute.Count);
-        mViews.reserve(attribute.Count);
+        mVertexBuffers.reserve(mCount);
+        mViews.reserve(mCount);
 
-        for (uint64_t i = 0; i < attribute.Count; ++i) {
+        for (uint64_t i = 0; i < mCount; ++i) {
             const DX12Buffer* buffer = static_cast<const DX12Buffer*>(attribute.VertexBuffer[i]);
             VI_ASSERT(buffer != nullptr && "DX12Buffer is nullptr");
             VI_ASSERT(buffer->GetResource() != nullptr && "DX12Buffer.GetResource() return nullptr");

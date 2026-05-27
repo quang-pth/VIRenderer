@@ -16,25 +16,20 @@ namespace VIEngine {
     {
         mRendererContext = static_cast<DX12RendererContext*>(rendererContext);
         mVertexBufferLayouts.resize(mAttribute.VertexBuffers.size());
-        mVertexBufferAccessors.reserve(mAttribute.VertexBuffers.size());
 
-        for (auto& vertexAttribute : attribute.VertexAttributes) {
+        for (auto& vertexAttribute : mAttribute.VertexAttributes) {
             uint64_t streamSlot = vertexAttribute.GetStreamSlot();
             VI_ASSERT((streamSlot >= 0 && streamSlot <= attribute.VertexAttributes.size()) && "Invalid vertex attribute index");
             mVertexBufferLayouts[vertexAttribute.GetStreamSlot()].AddAttribute(vertexAttribute);
         }
 
-        for (uint32_t streamSlot = 0; streamSlot < mAttribute.VertexBuffers.size(); ++streamSlot) {
-            DX12VertexBufferAccessor* bufferAccessor = static_cast<DX12VertexBufferAccessor*>(
-                GPUVertexBufferAccessor::Create({
-                    &mAttribute.VertexBuffers[0], 
-                    &mVertexBufferLayouts[streamSlot], 
-                    1, // 固定：1スロットあたり一つの頂点バッファにする
-                    streamSlot
-                })
-            );
-            mVertexBufferAccessors.push_back(bufferAccessor);
-        }
+        mVertexBufferAccessor = static_cast<DX12VertexBufferAccessor*>(
+            GPUVertexBufferAccessor::Create({
+                mAttribute.VertexBuffers.data(), 
+                mVertexBufferLayouts.data(), 
+                mAttribute.VertexBuffers.size()
+            })
+        );
 
         mIndexBufferAccessor = static_cast<DX12IndexBufferAccessor*>(GPUIndexBufferAccessor::Create(mAttribute.IndexBuffer));
 
@@ -52,10 +47,7 @@ namespace VIEngine {
     }
 
     DX12InputAssembler::~DX12InputAssembler() {
-        for (auto& vertexBufferAccessor : mVertexBufferAccessors) {
-            VI_FREE_MEMORY(vertexBufferAccessor)
-        }
-        mVertexBufferAccessors.clear();
+        VI_FREE_MEMORY(mVertexBufferAccessor)
         VI_FREE_MEMORY(mIndexBufferAccessor)
     }
 }

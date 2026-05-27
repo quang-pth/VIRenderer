@@ -13,12 +13,10 @@ namespace VIEngine {
         virtual ~GPUVertexBufferAccessor() = default;
         VI_FORCE_INLINE const VertexLayout* GetVertexLayout() const { return mLayout; }
         VI_FORCE_INLINE uint64_t GetCount() const { return mCount; }
-        VI_FORCE_INLINE uint8_t GetStreamSlot() const { return mStreamSlot; }
     protected:
-        GPUVertexBufferAccessor(const VertexLayout* layout, uint64_t count, uint32_t streamSlot) noexcept : mLayout(layout), mCount(count), mStreamSlot(streamSlot) {}
+        GPUVertexBufferAccessor(const VertexLayout* layout, uint64_t count) noexcept : mLayout(layout), mCount(count) {}
     protected:
         const VertexLayout* mLayout;
         uint64_t mCount;
-        uint32_t mStreamSlot;
     };
 }
